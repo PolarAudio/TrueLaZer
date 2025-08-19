@@ -18,8 +18,10 @@ DameiSDK::~DameiSDK()
 
 bool DameiSDK::Init(SocketLib::ipaddress ip)
 {
+    printf("DameiSDK::Init - Received IP: %lu\n", ip);
 	ipAddress = ip;
-    sdkSocket->init_udp_socket(0); // Initialize the SDKSocket's UDP socket with INADDR_ANY
+
+    sdkSocket->init_udp_socket(ip); // Initialize the SDKSocket's UDP socket with the specific local_ip
     inited = sdkSocket->is_udp_socket_inited; // Check if SDKSocket's UDP socket was initialized successfully
 
     // Initialize DameiSDK's own UDP socket
@@ -27,7 +29,7 @@ bool DameiSDK::Init(SocketLib::ipaddress ip)
         delete udpSocket;
         udpSocket = nullptr;
     }
-    udpSocket = new SocketLib::UDPSocket(DAC_LIST_PORT, 0); // Initialize DameiSDK's UDP socket with INADDR_ANY
+    udpSocket = new SocketLib::UDPSocket(DAC_LIST_PORT, ip); // Initialize DameiSDK's UDP socket with the specific local_ip
 
 	return inited;
 }

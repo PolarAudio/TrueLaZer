@@ -3,6 +3,9 @@
 
 #include <vector>
 #include <string>
+#include <thread>
+#include <mutex>
+#include <atomic>
 #include "../sdk/Easysocket.h"
 #include "../sdk/SDKSocket.h" // For dac_info, show_list, etc.
 
@@ -23,6 +26,7 @@ class DameiSDK;
 struct DiscoveredDACInfo {
     std::string ip_address;
     dac_info dac_information;
+    time_t last_seen;
 };
 
 class Showbridge {
@@ -30,27 +34,34 @@ public:
     Showbridge();
     ~Showbridge();
 
-    bool initSdk(SocketLib::ipaddress p_addr);
-    int scanForDevices(std::vector<std::string>& device_ips);
+    void startScanning(const std::string& interface_ip);
+    void stopScanning();
+    std::vector<DiscoveredDACInfo> getDiscoveredDACs();
     bool selectDevice(int deviceIndex);
     bool sendFrame(frame_buffer& frame);
 
     std::string getSelectedDeviceIp() { return selectedDeviceIp; }
     int getSelectedDeviceIndex() { return selectedDeviceIndex; }
-    std::vector<DiscoveredDACInfo> getDiscoveredDACs() { return discoveredDACs; }
     DameiSDK* getSdk() { return sdk; }
+    bool isScanning() { return is_scanning; }
 
 private:
+    void scanLoop();
+    void cleanupDeviceList();
+
 #ifdef _WIN32
     SOCKET discovery_socket;
 #else
     int discovery_socket;
 #endif
     std::string selectedDeviceIp;
+    std::string selectedInterfaceIp;
     int selectedDeviceIndex;
-    std::vector<std::string> availableDeviceIps; // Stores only IPs for the UI dropdown
-    std::vector<DiscoveredDACInfo> discoveredDACs; // Stores full info for internal use
+    std::vector<DiscoveredDACInfo> discoveredDACs;
     DameiSDK* sdk;
+    std::thread discovery_thread;
+    std::mutex dac_mutex;
+    std::atomic<bool> is_scanning;
 
     // Helper function to initialize Winsock (Windows only)
     bool initWinsock();

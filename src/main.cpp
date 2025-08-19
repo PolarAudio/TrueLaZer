@@ -233,7 +233,7 @@ int main(int, char**)
     // - If the file cannot be loaded, the function will return a nullptr. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
     // - Use '#define IMGUI_ENABLE_FREETYPE' in your imconfig file to use Freetype for higher quality font rendering.
     // - Read 'docs/FONTS.md' for more instructions and details.
-    // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \ ! 
+    // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \ !
     // - Our Emscripten build process allows embedding fonts to be accessible at runtime from the "fonts/" folder. See Makefile.emscripten for details.
     //style.FontSizeBase = 20.0f;
     //io.Fonts->AddFontDefault();
@@ -248,15 +248,13 @@ int main(int, char**)
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     // DameiSDK variables
-    // DameiSDK variables
     Showbridge showbridge;
-    bool sdk_initialized = false;
+    bool device_selected = false;
     show_list g_show_list; // Store the list of shows
     int g_selected_show_index = -1; // Index of the currently selected show
     show_info g_selected_show_info; // Information about the selected show
     bool g_show_extern_mode = false; // Current external mode of the selected show
     frame_buffer g_ilda_frame = {0}; // Global ILDA frame for rendering
-    std::vector<std::string> g_discovered_ips; // Store discovered IP addresses
     std::vector<std::string> g_local_interfaces; // Store local interface IPs for diagnostics
     std::string g_selected_local_interface_ip; // Store the selected local interface IP
 
@@ -311,11 +309,7 @@ int main(int, char**)
         if (ImGui::Button("Refresh Network Interfaces"))
         {
             g_local_interfaces.clear();
-
-            // Create a temporary UDPSocket to get interfaces
-            // This assumes UDPSocket can be constructed and get_interfaces can be called
-            // without a fully initialized SDK.
-            SocketLib::UDPSocket temp_udp_socket(0); // Port 0, default IP
+            SocketLib::UDPSocket temp_udp_socket(0);
             temp_udp_socket.get_interfaces(g_local_interfaces);
         }
         ImGui::Text("Detected Network Interfaces:");
@@ -331,6 +325,7 @@ int main(int, char**)
                 if (ImGui::RadioButton(ip.c_str(), ip == g_selected_local_interface_ip))
                 {
                     g_selected_local_interface_ip = ip;
+                    showbridge.startScanning(g_selected_local_interface_ip);
                 }
             }
         }
@@ -338,76 +333,57 @@ int main(int, char**)
         ImGui::Separator();
         // --- End Network Diagnostics ---
 
-        if (ImGui::Button("Scan and Connect"))
-        {
-            if (!g_selected_local_interface_ip.empty()) {
-                // Convert string IP to ipaddress (unsigned long)
-                unsigned long selected_ip_addr = inet_addr(g_selected_local_interface_ip.c_str());
-                if (selected_ip_addr != INADDR_NONE) {
-                    sdk_initialized = showbridge.initSdk(static_cast<SocketLib::ipaddress>(selected_ip_addr));
-                } else {
-                    // Handle invalid IP address string
-                    fprintf(stderr, "Invalid selected IP address: %s\n", g_selected_local_interface_ip.c_str());
-                    sdk_initialized = false;
-                }
-            } else {
-                // If no specific interface is selected, initialize with default (INADDR_ANY)
-                sdk_initialized = showbridge.initSdk(static_cast<SocketLib::ipaddress>(0));
-            }
+        ImGui::Text("Scanning for devices: %s", showbridge.isScanning() ? "Yes" : "No");
 
-            if (sdk_initialized) {
-                g_discovered_ips.clear();
-                showbridge.scanForDevices(g_discovered_ips);
-            } else {
-                ImGui::OpenPopup("SDK Error");
+        auto discovered_dacs = showbridge.getDiscoveredDACs();
+        if (!discovered_dacs.empty())
+        {
+            ImGui::Text("Discovered Devices:");
+            ImGui::BeginChild("##discovered_ips", ImVec2(0, 100), ImGuiChildFlags_Border, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+            for (int i = 0; i < discovered_dacs.size(); ++i)
+            {
+                char dac_label[128];
+                sprintf(dac_label, "%s (Channel: %d)", discovered_dacs[i].ip_address.c_str(), discovered_dacs[i].dac_information.channel);
+                if (ImGui::Selectable(dac_label, showbridge.getSelectedDeviceIndex() == i))
+                {
+                    if (showbridge.selectDevice(i)) {
+                        device_selected = true;
+                        // Now that a device is selected, we can get the show list.
+                        // The SDK will be initialized on demand by the getSdk() method if not already.
+                        if (showbridge.getSdk() && showbridge.getSdk()->GetShowList(g_show_list)) {
+                             g_selected_show_index = -1;
+                        } else {
+                            ImGui::OpenPopup("SDK Error");
+                        }
+                    }
+                }
             }
+            ImGui::EndChild();
+        } else {
+            ImGui::Text("No devices found.");
         }
 
         // Modal for SDK errors
         if (ImGui::BeginPopupModal("SDK Error", NULL, ImGuiWindowFlags_AlwaysAutoResize))
         {
-            ImGui::Text("Failed to connect to device.\nNo devices found or failed to initialize SDK.\nPlease check network connection and ensure device is on.");
+            ImGui::Text("Failed to communicate with device.\nPlease check network connection.");
             if (ImGui::Button("OK")) { ImGui::CloseCurrentPopup(); }
             ImGui::EndPopup();
         }
 
-        ImGui::Text("SDK Initialized: %s", sdk_initialized ? "Yes" : "No");
-        if (sdk_initialized)
+        ImGui::Text("Device Selected: %s", device_selected ? "Yes" : "No");
+        if (device_selected)
         {
-            ImGui::Text("Connected to: %s", showbridge.getSelectedDeviceIp().c_str());
+            ImGui::Text("Selected IP: %s", showbridge.getSelectedDeviceIp().c_str());
         }
 
-        if (!g_discovered_ips.empty())
-        {
-            ImGui::Text("Discovered Devices:");
-            ImGui::BeginChild("##discovered_ips", ImVec2(0, 100), ImGuiChildFlags_Border, ImGuiWindowFlags_AlwaysVerticalScrollbar);
-            for (int i = 0; i < g_discovered_ips.size(); ++i)
-            {
-                if (ImGui::Selectable(g_discovered_ips[i].c_str(), showbridge.getSelectedDeviceIndex() == i))
-                {
-                    sdk_initialized = showbridge.selectDevice(i);
-                    if (sdk_initialized)
-                    {
-                        // Get the list of shows from the newly selected device
-                        showbridge.getSdk()->GetShowList(g_show_list);
-                        g_selected_show_index = -1; // Reset show selection
-                    }
-                    else
-                    {
-                        ImGui::OpenPopup("SDK Error");
-                    }
-                }
-            }
-            ImGui::EndChild();
-        }
-
-        if (sdk_initialized)
+        if (device_selected)
         {
             ImGui::Separator();
             ImGui::Text("Available Shows: %d", g_show_list.count);
 
-            const char* combo_preview_value = (g_selected_show_index >= 0 && g_selected_show_index < g_show_list.count) 
-                ? g_show_list.udpPort[g_selected_show_index] > 0 ? g_selected_show_info.showName : "Select a Show" 
+            const char* combo_preview_value = (g_selected_show_index >= 0 && g_selected_show_index < g_show_list.count)
+                ? g_show_list.udpPort[g_selected_show_index] > 0 ? g_selected_show_info.showName : "Select a Show"
                 : "Select a Show";
 
             if (ImGui::BeginCombo("##shows", combo_preview_value))
@@ -415,7 +391,7 @@ int main(int, char**)
                 for (int i = 0; i < g_show_list.count; i++)
                 {
                     show_info temp_info;
-                    if (showbridge.getSdk()->GetShowInfo(i, temp_info))
+                    if (showbridge.getSdk() && showbridge.getSdk()->GetShowInfo(i, temp_info))
                     {
                         bool is_selected = (g_selected_show_index == i);
                         if (ImGui::Selectable(temp_info.showName, is_selected))
@@ -440,7 +416,7 @@ int main(int, char**)
 
                 if (ImGui::Button(g_show_extern_mode ? "Disable External Mode" : "Enable External Mode"))
                 {
-                    if (showbridge.getSdk()->SetShowExternMode(g_selected_show_index, !g_show_extern_mode))
+                    if (showbridge.getSdk() && showbridge.getSdk()->SetShowExternMode(g_selected_show_index, !g_show_extern_mode))
                     {
                         g_show_extern_mode = !g_show_extern_mode;
                     }
@@ -612,6 +588,7 @@ int main(int, char**)
 #endif
 
     // Cleanup
+    showbridge.stopScanning();
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();

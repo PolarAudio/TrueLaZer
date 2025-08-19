@@ -1,6 +1,3 @@
-Compile error log file is at compile_error.log we check this file first to see if there are any error we have to solve before where start working on new functions
-
-
 General Project Idea
 
 A Laser Show Program that works like Resolume,
@@ -88,3 +85,33 @@ Our ShowBridge protocol follows this pattern:
     Response: 16 bytes = Vendor ID (22,26) + Type (1) + Channel (1/2) + Device ID (630380) + Value (63) + Checksum (0x2237/0x2238).
 
 The labels 7 and 8 are extracted from the checksum’s last nibble, matching the device’s channel identifiers.
+
+
+gemini will not run any build commands
+
+---
+
+## Project Summary (as of 2025-08-19)
+
+**Project Name:** TrueLazer
+
+**Core Language:** C++
+
+**UI Library:** Dear ImGui
+
+**Goal:** Create a laser show program similar to Resolume for ILDA control.
+
+**DAC:** Showbridge
+
+**Connectivity:**
+
+*   The application now continuously scans for Showbridge DACs on the selected network interface.
+*   The UI displays a list of discovered DACs and their channels in real-time.
+*   The user can select a DAC and channel from the list.
+*   The SDK is initialized on-demand when communication is required (e.g., sending frames, getting show info), preventing crashes on device selection.
+
+**Next Steps:**
+
+*   Implement the sending of ILDA frames to the selected DAC and channel.
+*   Develop the ILDA clip deck, layers, and effects system.
+*   Integrate MIDI, DMX/Artnet, and OSC control.

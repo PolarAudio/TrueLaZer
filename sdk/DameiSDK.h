@@ -30,6 +30,7 @@ private:
     SDKSocket *sdkSocket;
 
     public:
+    SocketLib::ipaddress GetLocalIpAddress() { printf("DameiSDK::GetLocalIpAddress - Returning: %lu\n", ipAddress); return ipAddress; }
     SDKSocket* getSdkSocket() { return sdkSocket; }
 };
 
