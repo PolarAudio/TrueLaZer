@@ -1,0 +1,501 @@
+No.     Time           Source                Destination           Protocol Length Info
+    206 338.279330     169.254.25.104        255.255.255.255       UDP      48     8099 → 8089 Len=6
+
+Frame 206: 48 bytes on wire (384 bits), 48 bytes captured (384 bits) on interface \Device\NPF_{6AFAD7F1-7301-42EF-8DF6-88C3A56E2F3F}, id 0
+    Section number: 1
+    Interface id: 0 (\Device\NPF_{6AFAD7F1-7301-42EF-8DF6-88C3A56E2F3F})
+        Interface name: \Device\NPF_{6AFAD7F1-7301-42EF-8DF6-88C3A56E2F3F}
+        Interface description: 1G Network
+    Encapsulation type: Ethernet (1)
+    Arrival Time: Aug 18, 2025 13:08:07.268203000 Malay Peninsula Standard Time
+    [Time shift for this packet: 0.000000000 seconds]
+    Epoch Time: 1755493687.268203000 seconds
+    [Time delta from previous captured frame: 196.845589000 seconds]
+    [Time delta from previous displayed frame: 196.845589000 seconds]
+    [Time since reference or first frame: 338.279330000 seconds]
+    Frame Number: 206
+    Frame Length: 48 bytes (384 bits)
+    Capture Length: 48 bytes (384 bits)
+    [Frame is marked: True]
+    [Frame is ignored: False]
+    [Protocols in frame: eth:ethertype:ip:udp:data]
+    [Coloring Rule Name: UDP]
+    [Coloring Rule String: udp]
+Ethernet II, Src: TP-Link_09:48:5c (5c:62:8b:09:48:5c), Dst: Broadcast (ff:ff:ff:ff:ff:ff)
+    Destination: Broadcast (ff:ff:ff:ff:ff:ff)
+        Address: Broadcast (ff:ff:ff:ff:ff:ff)
+        .... ..1. .... .... .... .... = LG bit: Locally administered address (this is NOT the factory default)
+        .... ...1 .... .... .... .... = IG bit: Group address (multicast/broadcast)
+    Source: TP-Link_09:48:5c (5c:62:8b:09:48:5c)
+        Address: TP-Link_09:48:5c (5c:62:8b:09:48:5c)
+        .... ..0. .... .... .... .... = LG bit: Globally unique address (factory default)
+        .... ...0 .... .... .... .... = IG bit: Individual address (unicast)
+    Type: IPv4 (0x0800)
+Internet Protocol Version 4, Src: 169.254.25.104, Dst: 255.255.255.255
+    0100 .... = Version: 4
+    .... 0101 = Header Length: 20 bytes (5)
+    Differentiated Services Field: 0x00 (DSCP: CS0, ECN: Not-ECT)
+        0000 00.. = Differentiated Services Codepoint: Default (0)
+        .... ..00 = Explicit Congestion Notification: Not ECN-Capable Transport (0)
+    Total Length: 34
+    Identification: 0x733f (29503)
+    000. .... = Flags: 0x0
+        0... .... = Reserved bit: Not set
+        .0.. .... = Don't fragment: Not set
+        ..0. .... = More fragments: Not set
+    ...0 0000 0000 0000 = Fragment Offset: 0
+    Time to Live: 128
+    Protocol: UDP (17)
+    Header Checksum: 0x0426 [validation disabled]
+    [Header checksum status: Unverified]
+    Source Address: 169.254.25.104
+    Destination Address: 255.255.255.255
+User Datagram Protocol, Src Port: 8099, Dst Port: 8089
+    Source Port: 8099
+    Destination Port: 8089
+    Length: 14
+    Checksum: 0x96a9 [unverified]
+    [Checksum Status: Unverified]
+    [Stream index: 13]
+    [Timestamps]
+        [Time since first frame: 0.000000000 seconds]
+        [Time since previous frame: 0.000000000 seconds]
+    UDP payload (6 bytes)
+Data (6 bytes)
+
+0000  a9 fe 19 68 a3 1f                                 ...h..
+    Data: a9fe1968a31f
+    [Length: 6]
+
+No.     Time           Source                Destination           Protocol Length Info
+    211 338.279860     169.254.25.101        169.254.25.104        UDP      60     8089 → 8099 Len=16
+
+Frame 211: 60 bytes on wire (480 bits), 60 bytes captured (480 bits) on interface \Device\NPF_{6AFAD7F1-7301-42EF-8DF6-88C3A56E2F3F}, id 0
+    Section number: 1
+    Interface id: 0 (\Device\NPF_{6AFAD7F1-7301-42EF-8DF6-88C3A56E2F3F})
+        Interface name: \Device\NPF_{6AFAD7F1-7301-42EF-8DF6-88C3A56E2F3F}
+        Interface description: 1G Network
+    Encapsulation type: Ethernet (1)
+    Arrival Time: Aug 18, 2025 13:08:07.268733000 Malay Peninsula Standard Time
+    [Time shift for this packet: 0.000000000 seconds]
+    Epoch Time: 1755493687.268733000 seconds
+    [Time delta from previous captured frame: 0.000039000 seconds]
+    [Time delta from previous displayed frame: 0.000039000 seconds]
+    [Time since reference or first frame: 338.279860000 seconds]
+    Frame Number: 211
+    Frame Length: 60 bytes (480 bits)
+    Capture Length: 60 bytes (480 bits)
+    [Frame is marked: True]
+    [Frame is ignored: False]
+    [Protocols in frame: eth:ethertype:ip:udp:data]
+    [Coloring Rule Name: UDP]
+    [Coloring Rule String: udp]
+Ethernet II, Src: 02:00:00:26:00:3f (02:00:00:26:00:3f), Dst: TP-Link_09:48:5c (5c:62:8b:09:48:5c)
+    Destination: TP-Link_09:48:5c (5c:62:8b:09:48:5c)
+        Address: TP-Link_09:48:5c (5c:62:8b:09:48:5c)
+        .... ..0. .... .... .... .... = LG bit: Globally unique address (factory default)
+        .... ...0 .... .... .... .... = IG bit: Individual address (unicast)
+    Source: 02:00:00:26:00:3f (02:00:00:26:00:3f)
+        Address: 02:00:00:26:00:3f (02:00:00:26:00:3f)
+        .... ..1. .... .... .... .... = LG bit: Locally administered address (this is NOT the factory default)
+        .... ...0 .... .... .... .... = IG bit: Individual address (unicast)
+    Type: IPv4 (0x0800)
+    Padding: 0000
+Internet Protocol Version 4, Src: 169.254.25.101, Dst: 169.254.25.104
+    0100 .... = Version: 4
+    .... 0101 = Header Length: 20 bytes (5)
+    Differentiated Services Field: 0x00 (DSCP: CS0, ECN: Not-ECT)
+        0000 00.. = Differentiated Services Codepoint: Default (0)
+        .... ..00 = Explicit Congestion Notification: Not ECN-Capable Transport (0)
+    Total Length: 44
+    Identification: 0x0001 (1)
+    000. .... = Flags: 0x0
+        0... .... = Reserved bit: Not set
+        .0.. .... = Don't fragment: Not set
+        ..0. .... = More fragments: Not set
+    ...0 0000 0000 0000 = Fragment Offset: 0
+    Time to Live: 255
+    Protocol: UDP (17)
+    Header Checksum: 0x34f6 [validation disabled]
+    [Header checksum status: Unverified]
+    Source Address: 169.254.25.101
+    Destination Address: 169.254.25.104
+User Datagram Protocol, Src Port: 8089, Dst Port: 8099
+    Source Port: 8089
+    Destination Port: 8099
+    Length: 24
+    Checksum: 0x2237 [unverified]
+    [Checksum Status: Unverified]
+    [Stream index: 14]
+    [Timestamps]
+        [Time since first frame: 0.000000000 seconds]
+        [Time since previous frame: 0.000000000 seconds]
+    UDP payload (16 bytes)
+Data (16 bytes)
+
+0000  16 1a 01 02 00 26 00 3f 00 00 00 00 00 00 00 00   .....&.?........
+    Data: 161a01020026003f0000000000000000
+    [Length: 16]
+
+No.     Time           Source                Destination           Protocol Length Info
+    212 339.984519     169.254.25.104        169.254.255.255       BROWSER  243    Host Announcement DESKTOP-0IPEI8Q, Workstation, Server, NT Workstation
+
+Frame 212: 243 bytes on wire (1944 bits), 243 bytes captured (1944 bits) on interface \Device\NPF_{6AFAD7F1-7301-42EF-8DF6-88C3A56E2F3F}, id 0
+    Section number: 1
+    Interface id: 0 (\Device\NPF_{6AFAD7F1-7301-42EF-8DF6-88C3A56E2F3F})
+        Interface name: \Device\NPF_{6AFAD7F1-7301-42EF-8DF6-88C3A56E2F3F}
+        Interface description: 1G Network
+    Encapsulation type: Ethernet (1)
+    Arrival Time: Aug 18, 2025 13:08:08.973392000 Malay Peninsula Standard Time
+    [Time shift for this packet: 0.000000000 seconds]
+    Epoch Time: 1755493688.973392000 seconds
+    [Time delta from previous captured frame: 1.704659000 seconds]
+    [Time delta from previous displayed frame: 1.704659000 seconds]
+    [Time since reference or first frame: 339.984519000 seconds]
+    Frame Number: 212
+    Frame Length: 243 bytes (1944 bits)
+    Capture Length: 243 bytes (1944 bits)
+    [Frame is marked: True]
+    [Frame is ignored: False]
+    [Protocols in frame: eth:ethertype:ip:udp:nbdgm:smb:browser]
+    [Coloring Rule Name: SMB]
+    [Coloring Rule String: smb || nbss || nbns || nbipx || ipxsap || netbios]
+Ethernet II, Src: TP-Link_09:48:5c (5c:62:8b:09:48:5c), Dst: Broadcast (ff:ff:ff:ff:ff:ff)
+    Destination: Broadcast (ff:ff:ff:ff:ff:ff)
+        Address: Broadcast (ff:ff:ff:ff:ff:ff)
+        .... ..1. .... .... .... .... = LG bit: Locally administered address (this is NOT the factory default)
+        .... ...1 .... .... .... .... = IG bit: Group address (multicast/broadcast)
+    Source: TP-Link_09:48:5c (5c:62:8b:09:48:5c)
+        Address: TP-Link_09:48:5c (5c:62:8b:09:48:5c)
+        .... ..0. .... .... .... .... = LG bit: Globally unique address (factory default)
+        .... ...0 .... .... .... .... = IG bit: Individual address (unicast)
+    Type: IPv4 (0x0800)
+Internet Protocol Version 4, Src: 169.254.25.104, Dst: 169.254.255.255
+    0100 .... = Version: 4
+    .... 0101 = Header Length: 20 bytes (5)
+    Differentiated Services Field: 0x00 (DSCP: CS0, ECN: Not-ECT)
+        0000 00.. = Differentiated Services Codepoint: Default (0)
+        .... ..00 = Explicit Congestion Notification: Not ECN-Capable Transport (0)
+    Total Length: 229
+    Identification: 0x745d (29789)
+    000. .... = Flags: 0x0
+        0... .... = Reserved bit: Not set
+        .0.. .... = Don't fragment: Not set
+        ..0. .... = More fragments: Not set
+    ...0 0000 0000 0000 = Fragment Offset: 0
+    Time to Live: 128
+    Protocol: UDP (17)
+    Header Checksum: 0x5846 [validation disabled]
+    [Header checksum status: Unverified]
+    Source Address: 169.254.25.104
+    Destination Address: 169.254.255.255
+User Datagram Protocol, Src Port: 138, Dst Port: 138
+    Source Port: 138
+    Destination Port: 138
+    Length: 209
+    Checksum: 0xa9a6 [unverified]
+    [Checksum Status: Unverified]
+    [Stream index: 15]
+    [Timestamps]
+        [Time since first frame: 0.000000000 seconds]
+        [Time since previous frame: 0.000000000 seconds]
+    UDP payload (201 bytes)
+NetBIOS Datagram Service
+    Message Type: Direct_group datagram (17)
+    Flags: 0x02, This is first fragment, Node Type: B node
+        .... ...0 = More fragments follow: No
+        .... ..1. = This is first fragment: Yes
+        .... 00.. = Node Type: B node (0)
+    Datagram ID: 0xa396
+    Source IP: 169.254.25.104
+    Source Port: 138
+    Datagram length: 187 bytes
+    Packet offset: 0 bytes
+    Source name: DESKTOP-0IPEI8Q<20> (Server service)
+    Destination name: WORKGROUP<1d> (Local Master Browser)
+SMB (Server Message Block Protocol)
+    SMB Header
+        Server Component: SMB
+        SMB Command: Trans (0x25)
+        Error Class: Success (0x00)
+        Reserved: 00
+        Error Code: No Error
+        Flags: 0x00
+            0... .... = Request/Response: Message is a request to the server
+            .0.. .... = Notify: Notify client only on open
+            ..0. .... = Oplocks: OpLock not requested/granted
+            ...0 .... = Canonicalized Pathnames: Pathnames are not canonicalized
+            .... 0... = Case Sensitivity: Path names are case sensitive
+            .... ..0. = Receive Buffer Posted: Receive buffer has not been posted
+            .... ...0 = Lock and Read: Lock&Read, Write&Unlock are not supported
+        Flags2: 0x0000
+            0... .... .... .... = Unicode Strings: Strings are ASCII
+            .0.. .... .... .... = Error Code Type: Error codes are DOS error codes
+            ..0. .... .... .... = Execute-only Reads: Don't permit reads if execute-only
+            ...0 .... .... .... = Dfs: Don't resolve pathnames with Dfs
+            .... 0... .... .... = Extended Security Negotiation: Extended security negotiation is not supported
+            .... .0.. .... .... = Reparse Path: The request does not use a @GMT reparse path
+            .... .... .0.. .... = Long Names Used: Path names in request are not long file names
+            .... .... ...0 .... = Security Signatures Required: Security signatures are not required
+            .... .... .... 0... = Compressed: Compression is not requested
+            .... .... .... .0.. = Security Signatures: Security signatures are not supported
+            .... .... .... ..0. = Extended Attributes: Extended attributes are not supported
+            .... .... .... ...0 = Long Names Allowed: Long file names are not allowed in the response
+        Process ID High: 0
+        Signature: 0000000000000000
+        Reserved: 0000
+        Tree ID: 0
+        Process ID: 0
+        User ID: 0
+        Multiplex ID: 0
+    Trans Request (0x25)
+        Word Count (WCT): 17
+        Total Parameter Count: 0
+        Total Data Count: 33
+        Max Parameter Count: 0
+        Max Data Count: 0
+        Max Setup Count: 0
+        Reserved: 00
+        Flags: 0x0000
+            .... .... .... ..0. = One Way Transaction: Two way transaction
+            .... .... .... ...0 = Disconnect TID: Do NOT disconnect TID
+        Timeout: 1 second
+        Reserved: 0000
+        Parameter Count: 0
+        Parameter Offset: 0
+        Data Count: 33
+        Data Offset: 86
+        Setup Count: 3
+        Reserved: 00
+        Byte Count (BCC): 50
+        Transaction Name: \MAILSLOT\BROWSE
+SMB MailSlot Protocol
+    Opcode: Write Mail Slot (1)
+    Priority: 0
+    Class: Unreliable & Broadcast (2)
+    Size: 50
+    Mailslot Name: \MAILSLOT\BROWSE
+Microsoft Windows Browser Protocol
+    Command: Host Announcement (0x01)
+    Update Count: 0
+    Update Periodicity: 12 minutes
+    Host Name: DESKTOP-0IPEI8Q
+    Windows version: 
+    OS Major Version: 10
+    OS Minor Version: 0
+    Server Type: 0x00001003, Workstation, Server, NT Workstation
+        .... .... .... .... .... .... .... ...1 = Workstation: This is a Workstation
+        .... .... .... .... .... .... .... ..1. = Server: This is a Server
+        .... .... .... .... .... .... .... .0.. = SQL: This is NOT an SQL server
+        .... .... .... .... .... .... .... 0... = Domain Controller: This is NOT a Domain Controller
+        .... .... .... .... .... .... ...0 .... = Backup Controller: This is NOT a Backup Controller
+        .... .... .... .... .... .... ..0. .... = Time Source: This is NOT a Time Source
+        .... .... .... .... .... .... .0.. .... = Apple: This is NOT an Apple host
+        .... .... .... .... .... .... 0... .... = Novell: This is NOT a Novell server
+        .... .... .... .... .... ...0 .... .... = Member: This is NOT a Domain Member server
+        .... .... .... .... .... ..0. .... .... = Print: This is NOT a Print Queue server
+        .... .... .... .... .... .0.. .... .... = Dialin: This is NOT a Dialin server
+        .... .... .... .... .... 0... .... .... = Xenix: This is NOT a Xenix server
+        .... .... .... .... ...1 .... .... .... = NT Workstation: This is an NT Workstation
+        .... .... .... .... ..0. .... .... .... = WfW: This is NOT a WfW host
+        .... .... .... .... 0... .... .... .... = NT Server: This is NOT an NT Server
+        .... .... .... ...0 .... .... .... .... = Potential Browser: This is NOT a Potential Browser
+        .... .... .... ..0. .... .... .... .... = Backup Browser: This is NOT a Backup Browser
+        .... .... .... .0.. .... .... .... .... = Master Browser: This is NOT a Master Browser
+        .... .... .... 0... .... .... .... .... = Domain Master Browser: This is NOT a Domain Master Browser
+        .... .... ...0 .... .... .... .... .... = OSF: This is NOT an OSF host
+        .... .... ..0. .... .... .... .... .... = VMS: This is NOT a VMS host
+        .... .... .0.. .... .... .... .... .... = Windows 95+: This is NOT a Windows 95 or above host
+        .... .... 0... .... .... .... .... .... = DFS: THis is NOT a DFS server
+        .0.. .... .... .... .... .... .... .... = Local: This is NOT a local list only request
+        0... .... .... .... .... .... .... .... = Domain Enum: This is NOT a Domain Enum request
+    Browser Protocol Major Version: 15
+    Browser Protocol Minor Version: 1
+    Signature: 0xaa55
+    Host Comment: 
+
+No.     Time           Source                Destination           Protocol Length Info
+    213 343.019899     169.254.25.104        169.254.25.101        UDP      558    8099 → 8099 Len=516
+
+Frame 213: 558 bytes on wire (4464 bits), 558 bytes captured (4464 bits) on interface \Device\NPF_{6AFAD7F1-7301-42EF-8DF6-88C3A56E2F3F}, id 0
+    Section number: 1
+    Interface id: 0 (\Device\NPF_{6AFAD7F1-7301-42EF-8DF6-88C3A56E2F3F})
+        Interface name: \Device\NPF_{6AFAD7F1-7301-42EF-8DF6-88C3A56E2F3F}
+        Interface description: 1G Network
+    Encapsulation type: Ethernet (1)
+    Arrival Time: Aug 18, 2025 13:08:12.008772000 Malay Peninsula Standard Time
+    [Time shift for this packet: 0.000000000 seconds]
+    Epoch Time: 1755493692.008772000 seconds
+    [Time delta from previous captured frame: 3.035380000 seconds]
+    [Time delta from previous displayed frame: 3.035380000 seconds]
+    [Time since reference or first frame: 343.019899000 seconds]
+    Frame Number: 213
+    Frame Length: 558 bytes (4464 bits)
+    Capture Length: 558 bytes (4464 bits)
+    [Frame is marked: True]
+    [Frame is ignored: False]
+    [Protocols in frame: eth:ethertype:ip:udp:data]
+    [Coloring Rule Name: UDP]
+    [Coloring Rule String: udp]
+Ethernet II, Src: TP-Link_09:48:5c (5c:62:8b:09:48:5c), Dst: 02:00:00:26:00:3f (02:00:00:26:00:3f)
+    Destination: 02:00:00:26:00:3f (02:00:00:26:00:3f)
+        Address: 02:00:00:26:00:3f (02:00:00:26:00:3f)
+        .... ..1. .... .... .... .... = LG bit: Locally administered address (this is NOT the factory default)
+        .... ...0 .... .... .... .... = IG bit: Individual address (unicast)
+    Source: TP-Link_09:48:5c (5c:62:8b:09:48:5c)
+        Address: TP-Link_09:48:5c (5c:62:8b:09:48:5c)
+        .... ..0. .... .... .... .... = LG bit: Globally unique address (factory default)
+        .... ...0 .... .... .... .... = IG bit: Individual address (unicast)
+    Type: IPv4 (0x0800)
+Internet Protocol Version 4, Src: 169.254.25.104, Dst: 169.254.25.101
+    0100 .... = Version: 4
+    .... 0101 = Header Length: 20 bytes (5)
+    Differentiated Services Field: 0x00 (DSCP: CS0, ECN: Not-ECT)
+        0000 00.. = Differentiated Services Codepoint: Default (0)
+        .... ..00 = Explicit Congestion Notification: Not ECN-Capable Transport (0)
+    Total Length: 544
+    Identification: 0x13c0 (5056)
+    000. .... = Flags: 0x0
+        0... .... = Reserved bit: Not set
+        .0.. .... = Don't fragment: Not set
+        ..0. .... = More fragments: Not set
+    ...0 0000 0000 0000 = Fragment Offset: 0
+    Time to Live: 128
+    Protocol: UDP (17)
+    Header Checksum: 0x9e43 [validation disabled]
+    [Header checksum status: Unverified]
+    Source Address: 169.254.25.104
+    Destination Address: 169.254.25.101
+User Datagram Protocol, Src Port: 8099, Dst Port: 8099
+    Source Port: 8099
+    Destination Port: 8099
+    Length: 524
+    Checksum: 0x521f [unverified]
+    [Checksum Status: Unverified]
+    [Stream index: 16]
+    [Timestamps]
+        [Time since first frame: 0.000000000 seconds]
+        [Time since previous frame: 0.000000000 seconds]
+    UDP payload (516 bytes)
+Data (516 bytes)
+
+0000  00 00 00 ff f4 01 00 00 94 02 2f a8 a4 00 00 00   ........../.....
+0010  00 01 00 00 00 00 00 00 60 db 36 6b f4 01 00 00   ........`.6k....
+0020  18 05 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+0030  88 02 2f a8 a4 00 00 00 c0 12 cf 66 f4 01 00 00   ../........f....
+0040  18 02 2f a8 a4 00 00 00 00 00 00 00 00 00 00 00   ../.............
+0050  01 00 00 00 f4 01 00 00 00 00 00 00 00 00 00 00   ................
+0060  40 00 00 00 00 00 00 00 50 c1 f6 69 f4 01 00 00   @.......P..i....
+0070  03 00 00 00 a4 00 00 00 00 00 00 00 00 00 00 00   ................
+0080  04 00 00 00 00 00 00 00 40 00 00 00 00 00 00 00   ........@.......
+0090  30 00 00 00 00 00 00 00 10 00 00 00 00 00 00 00   0...............
+00a0  00 00 d4 66 f4 01 00 00 19 00 2f a8 a4 00 00 00   ...f....../.....
+00b0  04 00 00 00 00 00 00 00 c7 b3 03 9d f9 7f 00 00   ................
+00c0  00 00 cf 66 f4 01 00 00 00 00 00 00 f4 01 00 00   ...f............
+00d0  00 00 00 00 00 00 00 00 19 8a d6 99 f9 7f 00 00   ................
+00e0  20 73 12 9c f9 7f 00 00 00 00 00 00 00 00 00 00    s..............
+00f0  08 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+0100  e8 ff 2e a8 a4 00 00 00 47 20 01 00 f9 7f 00 00   ........G ......
+0110  00 00 2f a8 a4 00 00 00 a8 00 00 00 a4 00 00 00   ../.............
+0120  00 00 00 00 00 00 00 00 00 00 00 00 f4 01 00 00   ................
+0130  08 00 00 00 a4 00 00 00 00 00 00 00 00 00 00 00   ................
+0140  00 00 00 00 00 00 00 00 a8 00 00 00 a4 00 00 00   ................
+0150  01 00 00 00 02 00 00 00 02 00 00 00 11 00 00 00   ................
+0160  10 00 00 00 10 00 00 00 00 00 00 00 00 00 00 00   ................
+0170  05 00 00 00 00 00 01 00 00 80 00 00 10 90 00 00   ................
+0180  01 00 00 00 ea 03 00 00 09 06 02 00 08 00 00 00   ................
+0190  00 00 00 00 00 00 00 31 00 00 00 00 00 00 00 00   .......1........
+01a0  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+01b0  00 00 00 00 00 00 00 00 a0 1a 0f e7 8b ab cf 11   ................
+01c0  8c a3 00 80 5f 48 a1 92 08 00 00 00 00 00 00 00   ...._H..........
+01d0  02 00 1f a3 00 00 00 00 00 00 00 00 00 00 00 00   ................
+01e0  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+01f0  02 00 00 00 00 00 00 00 41 6c d6 99 f9 7f 00 00   ........Al......
+0200  00 00 00 00                                       ....
+    Data: 000000fff401000094022fa8a4000000000100000000000060db366bf401000018050000…
+    [Length: 516]
+
+No.     Time           Source                Destination           Protocol Length Info
+    214 343.020178     169.254.25.101        169.254.25.104        ICMP     70     Destination unreachable (Port unreachable)
+
+Frame 214: 70 bytes on wire (560 bits), 70 bytes captured (560 bits) on interface \Device\NPF_{6AFAD7F1-7301-42EF-8DF6-88C3A56E2F3F}, id 0
+    Section number: 1
+    Interface id: 0 (\Device\NPF_{6AFAD7F1-7301-42EF-8DF6-88C3A56E2F3F})
+        Interface name: \Device\NPF_{6AFAD7F1-7301-42EF-8DF6-88C3A56E2F3F}
+        Interface description: 1G Network
+    Encapsulation type: Ethernet (1)
+    Arrival Time: Aug 18, 2025 13:08:12.009051000 Malay Peninsula Standard Time
+    [Time shift for this packet: 0.000000000 seconds]
+    Epoch Time: 1755493692.009051000 seconds
+    [Time delta from previous captured frame: 0.000279000 seconds]
+    [Time delta from previous displayed frame: 0.000279000 seconds]
+    [Time since reference or first frame: 343.020178000 seconds]
+    Frame Number: 214
+    Frame Length: 70 bytes (560 bits)
+    Capture Length: 70 bytes (560 bits)
+    [Frame is marked: True]
+    [Frame is ignored: False]
+    [Protocols in frame: eth:ethertype:ip:icmp:ip:udp]
+    [Coloring Rule Name: ICMP errors]
+    [Coloring Rule String: icmp.type eq 3 || icmp.type eq 4 || icmp.type eq 5 || icmp.type eq 11 || icmpv6.type eq 1 || icmpv6.type eq 2 || icmpv6.type eq 3 || icmpv6.type eq 4]
+Ethernet II, Src: 02:00:00:26:00:3f (02:00:00:26:00:3f), Dst: TP-Link_09:48:5c (5c:62:8b:09:48:5c)
+    Destination: TP-Link_09:48:5c (5c:62:8b:09:48:5c)
+        Address: TP-Link_09:48:5c (5c:62:8b:09:48:5c)
+        .... ..0. .... .... .... .... = LG bit: Globally unique address (factory default)
+        .... ...0 .... .... .... .... = IG bit: Individual address (unicast)
+    Source: 02:00:00:26:00:3f (02:00:00:26:00:3f)
+        Address: 02:00:00:26:00:3f (02:00:00:26:00:3f)
+        .... ..1. .... .... .... .... = LG bit: Locally administered address (this is NOT the factory default)
+        .... ...0 .... .... .... .... = IG bit: Individual address (unicast)
+    Type: IPv4 (0x0800)
+Internet Protocol Version 4, Src: 169.254.25.101, Dst: 169.254.25.104
+    0100 .... = Version: 4
+    .... 0101 = Header Length: 20 bytes (5)
+    Differentiated Services Field: 0x00 (DSCP: CS0, ECN: Not-ECT)
+        0000 00.. = Differentiated Services Codepoint: Default (0)
+        .... ..00 = Explicit Congestion Notification: Not ECN-Capable Transport (0)
+    Total Length: 56
+    Identification: 0x0002 (2)
+    000. .... = Flags: 0x0
+        0... .... = Reserved bit: Not set
+        .0.. .... = Don't fragment: Not set
+        ..0. .... = More fragments: Not set
+    ...0 0000 0000 0000 = Fragment Offset: 0
+    Time to Live: 255
+    Protocol: ICMP (1)
+    Header Checksum: 0x34f9 [validation disabled]
+    [Header checksum status: Unverified]
+    Source Address: 169.254.25.101
+    Destination Address: 169.254.25.104
+Internet Control Message Protocol
+    Type: 3 (Destination unreachable)
+    Code: 3 (Port unreachable)
+    Checksum: 0x698b [correct]
+    [Checksum Status: Good]
+    Unused: 00000000
+    Internet Protocol Version 4, Src: 169.254.25.104, Dst: 169.254.25.101
+        0100 .... = Version: 4
+        .... 0101 = Header Length: 20 bytes (5)
+        Differentiated Services Field: 0x00 (DSCP: CS0, ECN: Not-ECT)
+            0000 00.. = Differentiated Services Codepoint: Default (0)
+            .... ..00 = Explicit Congestion Notification: Not ECN-Capable Transport (0)
+        Total Length: 544
+        Identification: 0x13c0 (5056)
+        000. .... = Flags: 0x0
+            0... .... = Reserved bit: Not set
+            .0.. .... = Don't fragment: Not set
+            ..0. .... = More fragments: Not set
+        ...0 0000 0000 0000 = Fragment Offset: 0
+        Time to Live: 128
+        Protocol: UDP (17)
+        Header Checksum: 0x9e43 [validation disabled]
+        [Header checksum status: Unverified]
+        Source Address: 169.254.25.104
+        Destination Address: 169.254.25.101
+    User Datagram Protocol, Src Port: 8099, Dst Port: 8099
+        Source Port: 8099
+        Destination Port: 8099
+        Length: 524
+        Checksum: 0x521f [unverified]
+        [Checksum Status: Unverified]
+        [Stream index: 16]
