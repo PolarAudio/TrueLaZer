@@ -8,7 +8,7 @@
 
 class DameiSDK {
 public:
-    DameiSDK();
+    DameiSDK(SOCKET socket);
     ~DameiSDK();
 
     bool Init(SocketLib::ipaddress ip);
@@ -27,11 +27,9 @@ private:
     bool isSameEndian;
     bool inited;
     SocketLib::UDPSocket *udpSocket;
-    SDKSocket *sdkSocket;
 
     public:
     SocketLib::ipaddress GetLocalIpAddress() { printf("DameiSDK::GetLocalIpAddress - Returning: %lu\n", ipAddress); return ipAddress; }
-    SDKSocket* getSdkSocket() { return sdkSocket; }
 };
 
 #endif

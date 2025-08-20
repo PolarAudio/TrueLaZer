@@ -28,8 +28,8 @@ struct safety_zone {
 };
 
 struct point_buffer {
-	float x;//the x coordinate of the point, value from -1.0 to 1.0
-	float y;//the y coordinate of the point, value from -1.0 to 1.0
+	int x;//the x coordinate of the point, value from -1.0 to 1.0
+	int y;//the y coordinate of the point, value from -1.0 to 1.0
 	unsigned char blanking;//0: a dark point, 1: a light point with color
 	unsigned char r;//red color of the point
 	unsigned char g;//green color of the point
@@ -37,7 +37,7 @@ struct point_buffer {
 };
 
 struct frame_buffer {
-	short count;//total points number in the frame, most of the case, should be less than 1000
+	int count;//total points number in the frame, most of the case, should be less than 1000
 	unsigned char status;//should be always 0
 	unsigned char delay;//should be always o
 	point_buffer points[2500];//the value of the points
@@ -165,6 +165,7 @@ void PutShort(short &value, void *buffer);
 void GetShort(short &value, void *buffer);
 void PutFloat(float &value, void *buffer);
 void GetFloat(float &value, void *buffer);
+int Swap(int data);
 
 #define SWAP(x) x=Swap(x)
 #pragma pack(pop)

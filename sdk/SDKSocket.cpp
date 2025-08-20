@@ -49,6 +49,16 @@ float Swap(float data) {
     return un._i;  
 }
 
+int Swap(int data) {
+    union {
+        int _i;
+        char _c[sizeof(int)];
+    } un;
+    un._i = data;
+    Swap(un._c, sizeof(int));
+    return un._i;
+}
+
 void PutShort(short &value, void *buffer)
 {
     short s = value;

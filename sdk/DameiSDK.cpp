@@ -3,34 +3,24 @@
 #include "DameiSDK.h"
 #include "SDKSocket.h"
 
-DameiSDK::DameiSDK()
+DameiSDK::DameiSDK(SOCKET socket)
 {
 	memset(&showList, 0, sizeof(showList));
 	isSameEndian = true; //suppose we have same endian
 	inited = false;
-    sdkSocket = new SDKSocket();
+    udpSocket = new SocketLib::UDPSocket(socket);
 }
 
 DameiSDK::~DameiSDK()
 {
-    delete sdkSocket;
+    delete udpSocket;
 }
 
 bool DameiSDK::Init(SocketLib::ipaddress ip)
 {
     printf("DameiSDK::Init - Received IP: %lu\n", ip);
 	ipAddress = ip;
-
-    sdkSocket->init_udp_socket(ip); // Initialize the SDKSocket's UDP socket with the specific local_ip
-    inited = sdkSocket->is_udp_socket_inited; // Check if SDKSocket's UDP socket was initialized successfully
-
-    // Initialize DameiSDK's own UDP socket
-    if (udpSocket) {
-        delete udpSocket;
-        udpSocket = nullptr;
-    }
-    udpSocket = new SocketLib::UDPSocket(DAC_LIST_PORT, ip); // Initialize DameiSDK's UDP socket with the specific local_ip
-
+    inited = (udpSocket->GetSock() != INVALID_SOCKET);
 	return inited;
 }
 
@@ -78,7 +68,7 @@ bool DameiSDK::GetShowInfo(int showIndex, show_info &showInfo)
 			query.query_sn_l = 1;
 			query.show_index = showIndex;
 			udpSocket->UDPSendTo(ipAddress, DAC_LIST_PORT, (const char *)&query, sizeof(query));
-			//			Sleep(500);
+//			Sleep(500);
 			int rCount = udpSocket->UDPReceive((char *)&result, sizeof(result));
 			if (rCount == sizeof(result)) {
 				showInfo = result.result.showInfo;
@@ -129,7 +119,7 @@ bool DameiSDK::GetShowOptimizerSetting(int showIndex, show_optimizer_setting &se
 			query.query_sn_l = 3;
 			query.show_index = showIndex;
 			udpSocket->UDPSendTo(ipAddress, DAC_LIST_PORT, (const char *)&query, sizeof(query));
-			//			Sleep(500);
+//			Sleep(500);
 			int rCount = udpSocket->UDPReceive((char *)&result, sizeof(result));
 			if (rCount == sizeof(result)) {
 				memcpy(&setting, &result.result.optimizerSetting, sizeof(setting));
@@ -189,41 +179,32 @@ bool DameiSDK::SetShowExternMode(int showIndex, bool externMode)
 bool DameiSDK::SendPointsToShow(int showIndex, frame_buffer &frameBuffer)
 {
 	bool res = false;
-	if(showIndex < showList.count && showList.udpPort[showIndex] > UDP_DAC_EXTERNAL_PORT_BEGIN){
+	if(showIndex < showList.count && showList.udpPort[showIndex] >= UDP_DAC_EXTERNAL_PORT_BEGIN){
 		struct in_addr addr;
 		addr.s_addr = ipAddress;
 		frameBuffer.status = 0;
 		if(!isSameEndian){
+			SWAP(frameBuffer.count);
 			for(int i=0; i<frameBuffer.count; i++){
 				SWAP(frameBuffer.points[i].x);
 				SWAP(frameBuffer.points[i].y);
 			}
-			SWAP(frameBuffer.count);
 		}
-		int rCount = udpSocket->UDPSendTo(addr.s_addr, showList.udpPort[showIndex], (const char*)&frameBuffer, sizeof(frameBuffer));
-		if(rCount == sizeof(frameBuffer)){
+
+		// Calculate the actual size of the data to send
+		size_t data_size = sizeof(frameBuffer.count) + sizeof(frameBuffer.status) + sizeof(frameBuffer.delay) + frameBuffer.count * sizeof(point_buffer);
+
+		int rCount = udpSocket->UDPSendTo(addr.s_addr, showList.udpPort[showIndex], (const char*)&frameBuffer, data_size);
+		if(rCount == data_size){
 			res = true;
 		}
 	}
 	return res;
 }
 
-
-
-
-
 bool DameiSDK::Init(SocketLib::ipaddress ip, SocketLib::ipaddress local_ip)
 {
     ipAddress = ip;
-    sdkSocket->init_udp_socket(local_ip); // Initialize SDKSocket's UDP socket with specific local_ip
-    inited = sdkSocket->is_udp_socket_inited; // Check if SDKSocket's UDP socket was initialized successfully
-
-    // Initialize DameiSDK's own UDP socket
-    if (udpSocket) {
-        delete udpSocket;
-        udpSocket = nullptr;
-    }
-    udpSocket = new SocketLib::UDPSocket(DAC_LIST_PORT, local_ip); // Initialize DameiSDK's UDP socket with specific local_ip
-
+    inited = (udpSocket->GetSock() != INVALID_SOCKET);
     return inited;
 }
