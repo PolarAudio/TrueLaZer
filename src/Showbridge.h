@@ -1,21 +1,32 @@
-#pragma once
+#ifndef SHOWBRIDGE_H
+#define SHOWBRIDGE_H
 
-#include <string>
 #include <vector>
-#include <winsock2.h>
-#include <ws2tcpip.h>
-
-#include "../sdk/SDKSocket.h"
+#include <string>
 #include <thread>
 #include <mutex>
 #include <atomic>
+#include "../sdk/Easysocket.h"
+#include "../sdk/SDKSocket.h" // For dac_info, show_list, etc.
 
-#pragma comment(lib, "Ws2_32.lib")
+// Include platform-specific socket headers
+#ifdef _WIN32
+#include <winsock2.h>
+#pragma comment(lib, "ws2_32.lib") // Link with ws2_32.lib
+#else
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#endif
 
-// Definition for DiscoveredDACInfo
+// Forward declaration
+class DameiSDK;
+
 struct DiscoveredDACInfo {
-    dac_info dac_information;
     std::string ip_address;
+    dac_info dac_information;
+    time_t last_seen;
 };
 
 class Showbridge {
@@ -23,29 +34,38 @@ public:
     Showbridge();
     ~Showbridge();
 
-    bool initialize();
-    void shutdown();
-    std::vector<std::string> getNetworkInterfaces(); // New: Get list of local network interfaces
-    void discoverDACs(const std::string& local_ip_address = ""); // Modified: Optional local IP for binding
-    std::vector<DiscoveredDACInfo> performDACDiscovery(const std::string& local_ip_address);
-    void selectDAC(int index);
-    bool sendFrame(const frame_buffer& fb);
+    void startScanning(const std::string& interface_ip);
+    void stopScanning();
+    std::vector<DiscoveredDACInfo> getDiscoveredDACs();
+    bool selectDevice(int deviceIndex);
+    bool sendFrame(frame_buffer& frame);
 
-    std::vector<DiscoveredDACInfo> discoveredDACs;
-    std::string selectedDeviceIdentifier; // Stores IP_Channel for selected DAC
-    int selectedDeviceIndex; // Updated based on selectedDeviceIdentifier
+    std::string getSelectedDeviceIp() { return selectedDeviceIp; }
+    int getSelectedDeviceIndex() { return selectedDeviceIndex; }
+    DameiSDK* getSdk() { return sdk; }
+    bool isScanning() { return is_scanning; }
 
 private:
-    unsigned char globalSequenceCounter;
+    void scanLoop();
+    void cleanupDeviceList();
 
-    // Threading for continuous discovery
-    std::thread discoveryThread;
-    std::atomic<bool> stopDiscoveryFlag;
+#ifdef _WIN32
+    SOCKET discovery_socket;
+#else
+    int discovery_socket;
+#endif
+    std::string selectedDeviceIp;
+    std::string selectedInterfaceIp;
+    int selectedDeviceIndex;
+    std::vector<DiscoveredDACInfo> discoveredDACs;
+    DameiSDK* sdk;
+    std::thread discovery_thread;
+    std::mutex dac_mutex;
+    std::atomic<bool> is_scanning;
 
-    void discoveryThreadLoop(const std::string& local_ip_address);
-
-public:
-    std::mutex dacMutex;
-    void startDiscovery(const std::string& local_ip_address = "");
-    void stopDiscovery();
+    // Helper function to initialize Winsock (Windows only)
+    bool initWinsock();
+    void cleanupWinsock();
 };
+
+#endif // SHOWBRIDGE_H

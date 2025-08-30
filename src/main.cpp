@@ -9,22 +9,22 @@
 
 #define _WIN32_WINNT 0x0601 // Windows 7
 #include "imgui.h"
+#include "../sdk/Easysocket.h"
+#include "../sdk/DameiSDK.h"
 #include <stdio.h> // Ensure stdio is included for printf
-#include <iostream>
+#pragma message("---" "main.cpp is being compiled" "---")
+
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui_internal.h"
-#include <stdio.h> // Ensure stdio is included for printf
+#include <stdio.h>
 #include <vector>
 #include <string>
-#include <filesystem>
 #include "Showbridge.h"
-#include "ClipDeck.h"
 #if defined(IMGUI_IMPL_OPENGL_ES2)
 #include <GLES2/gl2.h>
 #endif
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
-#include <windows.h> // For GetModuleFileNameA
 
 // [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to maximize ease of testing and compatibility with old VS compilers.
 // To link with VS2010-era libraries, VS2015+ requires linking with legacy_stdio_definitions.lib, which we do using this pragma.
@@ -38,20 +38,9 @@
 #include "../libs/emscripten/emscripten_mainloop_stub.h"
 #endif
 
-namespace fs = std::filesystem;
-
 static void glfw_error_callback(int error, const char* description)
 {
     fprintf(stderr, "GLFW Error %d: %s\n", error, description);
-}
-
-// Helper function to get the executable's directory
-std::string GetExecutablePath()
-{
-    char buffer[MAX_PATH];
-    GetModuleFileNameA(NULL, buffer, MAX_PATH);
-    std::string::size_type pos = std::string(buffer).find_last_of("/\\"); // Fix here
-    return std::string(buffer).substr(0, pos);
 }
 
 void GenerateSampleILDAFrame(frame_buffer& fb)
@@ -59,19 +48,42 @@ void GenerateSampleILDAFrame(frame_buffer& fb)
     // Clear existing points
     fb.count = 0;
 
-    const int ILDA_MAX_COORD = 32767;
-    const int NUM_POINTS_TO_GENERATE = 383; // Target a number of points to get closer to 4612 bytes
+    // Define a simple triangle
+    // Point 1 (Red)
+    fb.points[fb.count].x = -0.5f;
+    fb.points[fb.count].y = -0.5f;
+    fb.points[fb.count].blanking = 1; // Light point
+    fb.points[fb.count].r = 255;
+    fb.points[fb.count].g = 0;
+    fb.points[fb.count].b = 0;
+    fb.count++;
 
-    // Generate a simple line back and forth
-    for (int i = 0; i < NUM_POINTS_TO_GENERATE; ++i) {
-        fb.points[fb.count].x = static_cast<int>((i % 2 == 0 ? -0.5f : 0.5f) * ILDA_MAX_COORD);
-        fb.points[fb.count].y = static_cast<int>((i % 2 == 0 ? -0.5f : 0.5f) * ILDA_MAX_COORD);
-        fb.points[fb.count].blanking = 1;
-        fb.points[fb.count].r = 255;
-        fb.points[fb.count].g = 255;
-        fb.points[fb.count].b = 255;
-        fb.count++;
-    }
+    // Point 2 (Green)
+    fb.points[fb.count].x = 0.0f;
+    fb.points[fb.count].y = 0.5f;
+    fb.points[fb.count].blanking = 1; // Light point
+    fb.points[fb.count].r = 0;
+    fb.points[fb.count].g = 255;
+    fb.points[fb.count].b = 0;
+    fb.count++;
+
+    // Point 3 (Blue)
+    fb.points[fb.count].x = 0.5f;
+    fb.points[fb.count].y = -0.5f;
+    fb.points[fb.count].blanking = 1; // Light point
+    fb.points[fb.count].r = 0;
+    fb.points[fb.count].g = 0;
+    fb.points[fb.count].b = 255;
+    fb.count++;
+
+    // Close the triangle (blanked point to avoid drawing line back to start)
+    fb.points[fb.count].x = -0.5f;
+    fb.points[fb.count].y = -0.5f;
+    fb.points[fb.count].blanking = 0; // Dark point
+    fb.points[fb.count].r = 0;
+    fb.points[fb.count].g = 0;
+    fb.points[fb.count].b = 0;
+    fb.count++;
 
     fb.status = 0;
     fb.delay = 0;
@@ -122,55 +134,6 @@ void RenderILDAFrame(const frame_buffer& fb)
     glPopAttrib();
 }
 
-void loadClips(ClipDeck& clipDeck, const std::string& directory) {
-    // Clear existing clips before loading new ones
-    clipDeck.clear();
-    std::cout << "Loading clips from: " << directory << std::endl;
-
-    try {
-        if (!fs::exists(directory) || !fs::is_directory(directory)) {
-            std::cerr << "Error: Directory not found or not a directory: " << directory << std::endl;
-            std::cerr << "Current working directory is: " << fs::current_path() << std::endl;
-            return;
-        }
-
-        int row = 0;
-        int col = 0;
-        for (const auto& entry : fs::directory_iterator(directory)) {
-            if (entry.is_regular_file() && (entry.path().extension() == ".ild" || entry.path().extension() == ".ILD")) {
-                std::string path = entry.path().string();
-                std::cout << "Found ILDA file: " << path << std::endl;
-                std::string filename = entry.path().filename().string();
-                size_t lastdot = filename.find_last_of(".");
-                std::string name = (lastdot == std::string::npos) ? filename : filename.substr(0, lastdot);
-                clipDeck.setClip(row, col, new Clip(name, path));
-                col++;
-                if (col >= clipDeck.getCols()) {
-                    col = 0;
-                    row++;
-                    if (row >= clipDeck.getRows()) {
-                        break;
-                    }
-                }
-            }
-        }
-    }
-    catch (const fs::filesystem_error& e) {
-        std::cerr << "Filesystem error: " << e.what() << std::endl;
-        std::cerr << "Path: " << directory << std::endl;
-        std::cerr << "Current working directory is: " << fs::current_path() << std::endl;
-    }
-    catch (const std::exception& e) {
-        std::cerr << "Standard exception: " << e.what() << std::endl;
-    }
-    catch (...)
-    {
-        std::cerr << "An unknown error occurred while loading clips.";
-    }
-
-    std::cout << "Finished loading clips.";
-}
-
 // Main code
 int main(int, char**)
 {
@@ -181,7 +144,7 @@ int main(int, char**)
         fprintf(stderr, "Failed to initialize GLFW\n");
         return 1;
     }
-    printf("GLFW window created successfully.\n");
+    printf("GLFW initialized successfully.\n");
 
     // Decide GL+GLSL versions
 #if defined(IMGUI_IMPL_OPENGL_ES2)
@@ -284,32 +247,18 @@ int main(int, char**)
     // Our state
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-    // TrueLazer variables
+    // DameiSDK variables
     Showbridge showbridge;
-    // Initialize Showbridge (WSAStartup)
-    if (!showbridge.initialize()) { // This is where WSAStartup is called
-        fprintf(stderr, "Failed to initialize Showbridge (Winsock). Error: %d\n", WSAGetLastError());
-        return 1;
-    }
     bool device_selected = false;
+    show_list g_show_list; // Store the list of shows
+    int g_selected_show_index = -1; // Index of the currently selected show
+    show_info g_selected_show_info; // Information about the selected show
+    bool g_show_extern_mode = false; // Current external mode of the selected show
     frame_buffer g_ilda_frame = {0}; // Global ILDA frame for rendering
-    std::vector<std::string> g_local_interfaces = showbridge.getNetworkInterfaces(); // Store local interface IPs for diagnostics
+    std::vector<std::string> g_local_interfaces; // Store local interface IPs for diagnostics
     std::string g_selected_local_interface_ip; // Store the selected local interface IP
-    if (!g_local_interfaces.empty()) {
-        g_selected_local_interface_ip = g_local_interfaces[0]; // Select the first interface by default
-    }
-
-    ClipDeck clipDeck(4, 8);
-    std::cout << "Loading clips..." << std::endl;
-    std::string ilda_files_path = GetExecutablePath() + "\\..\\ILDA-FILE-FORMAT-FILES"; // Corrected path
-    printf("Executable Path: %s\n", GetExecutablePath().c_str());
-    printf("ILDA Files Path: %s\n", ilda_files_path.c_str());
-    loadClips(clipDeck, ilda_files_path);
-    std::cout << "Clips loaded.";
-
 
     // Main loop
-    std::cout << "Entering main loop..." << std::endl;
 #ifdef __EMSCRIPTEN__
     // For an Emscripten build we are disabling file-system access, so let's not attempt to do a fopen() of the imgui.ini file.
     // You may manually call LoadIniSettingsFromMemory() to load settings from your own storage.
@@ -355,85 +304,137 @@ int main(int, char**)
 
         // SDK Control Window
         ImGui::Begin("SDK Control");
-        std::lock_guard<std::mutex> lock(showbridge.dacMutex); // Protect access to discoveredDACs
 
         // --- Network Diagnostics ---
-        // Removed: Refresh Network Interfaces button and related logic
-        // as Showbridge handles discovery internally and doesn't expose network interfaces directly.
-        // If specific interface selection is needed, it would be a more complex feature.
-
-        // Network Interface Selection
-        if (!g_local_interfaces.empty())
+        if (ImGui::Button("Refresh Network Interfaces"))
         {
-            const char* current_interface_ip = g_selected_local_interface_ip.c_str();
-            if (ImGui::BeginCombo("Network Interface", current_interface_ip))
+            g_local_interfaces.clear();
+            SocketLib::UDPSocket temp_udp_socket(0);
+            temp_udp_socket.get_interfaces(g_local_interfaces);
+        }
+        ImGui::Text("Detected Network Interfaces:");
+        ImGui::BeginChild("##local_interfaces", ImVec2(0, 100), ImGuiChildFlags_Border, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+        if (g_local_interfaces.empty())
+        {
+            ImGui::Text("(No interfaces found. Click Refresh)");
+        }
+        else
+        {
+            for (const auto& ip : g_local_interfaces)
             {
-                for (const auto& ip : g_local_interfaces)
+                if (ImGui::RadioButton(ip.c_str(), ip == g_selected_local_interface_ip))
                 {
-                    bool is_selected = (current_interface_ip == ip);
-                    if (ImGui::Selectable(ip.c_str(), is_selected))
-                    {
-                        g_selected_local_interface_ip = ip;
+                    g_selected_local_interface_ip = ip;
+                    showbridge.startScanning(g_selected_local_interface_ip);
+                }
+            }
+        }
+        ImGui::EndChild();
+        ImGui::Separator();
+        // --- End Network Diagnostics ---
+
+        ImGui::Text("Scanning for devices: %s", showbridge.isScanning() ? "Yes" : "No");
+
+        auto discovered_dacs = showbridge.getDiscoveredDACs();
+        if (!discovered_dacs.empty())
+        {
+            ImGui::Text("Discovered Devices:");
+            ImGui::BeginChild("##discovered_ips", ImVec2(0, 100), ImGuiChildFlags_Border, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+            for (int i = 0; i < discovered_dacs.size(); ++i)
+            {
+                char dac_label[128];
+                sprintf(dac_label, "%s (Channel: %d)", discovered_dacs[i].ip_address.c_str(), discovered_dacs[i].dac_information.channel);
+                if (ImGui::Selectable(dac_label, showbridge.getSelectedDeviceIndex() == i))
+                {
+                    if (showbridge.selectDevice(i)) {
+                        device_selected = true;
+                        // Now that a device is selected, we can get the show list.
+                        // The SDK will be initialized on demand by the getSdk() method if not already.
+                        if (showbridge.getSdk() && showbridge.getSdk()->GetShowList(g_show_list)) {
+                             g_selected_show_index = -1;
+                        } else {
+                            ImGui::OpenPopup("SDK Error");
+                        }
                     }
-                    if (is_selected)
+                }
+            }
+            ImGui::EndChild();
+        } else {
+            ImGui::Text("No devices found.");
+        }
+
+        // Modal for SDK errors
+        if (ImGui::BeginPopupModal("SDK Error", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text("Failed to communicate with device.\nPlease check network connection.");
+            if (ImGui::Button("OK")) { ImGui::CloseCurrentPopup(); }
+            ImGui::EndPopup();
+        }
+
+        ImGui::Text("Device Selected: %s", device_selected ? "Yes" : "No");
+        if (device_selected)
+        {
+            ImGui::Text("Selected IP: %s", showbridge.getSelectedDeviceIp().c_str());
+        }
+
+        if (device_selected)
+        {
+            ImGui::Separator();
+            ImGui::Text("Available Shows: %d", g_show_list.count);
+
+            const char* combo_preview_value = (g_selected_show_index >= 0 && g_selected_show_index < g_show_list.count)
+                ? g_show_list.udpPort[g_selected_show_index] > 0 ? g_selected_show_info.showName : "Select a Show"
+                : "Select a Show";
+
+            if (ImGui::BeginCombo("##shows", combo_preview_value))
+            {
+                for (int i = 0; i < g_show_list.count; i++)
+                {
+                    show_info temp_info;
+                    if (showbridge.getSdk() && showbridge.getSdk()->GetShowInfo(i, temp_info))
                     {
-                        ImGui::SetItemDefaultFocus();
+                        bool is_selected = (g_selected_show_index == i);
+                        if (ImGui::Selectable(temp_info.showName, is_selected))
+                        {
+                            g_selected_show_index = i;
+                            g_selected_show_info = temp_info;
+                            g_show_extern_mode = (g_selected_show_info.cannerInfo.status[1] == 3);
+                        }
+                        if (is_selected)
+                            ImGui::SetItemDefaultFocus();
                     }
                 }
                 ImGui::EndCombo();
             }
-        }
-        else
-        {
-            ImGui::Text("No network interfaces found.");
-        }
 
-        if (ImGui::Button("Discover DACs"))
-        {
-            printf("Attempting to start discovery on interface: %s\n", g_selected_local_interface_ip.c_str());
-            showbridge.startDiscovery(g_selected_local_interface_ip);
-        }
-        ImGui::Separator();
-
-        ImGui::Text("Discovered Devices:");
-        if (!showbridge.discoveredDACs.empty())
-        {
-            ImGui::BeginChild("##discovered_ips", ImVec2(0, 100), ImGuiChildFlags_Border, ImGuiWindowFlags_AlwaysVerticalScrollbar);
-            for (int i = 0; i < showbridge.discoveredDACs.size(); ++i)
+            if (g_selected_show_index != -1)
             {
-                ImGui::PushID(i);
-                char device_label[64];
-                snprintf(device_label, sizeof(device_label), "%s (Ch: %d)",
-                         showbridge.discoveredDACs[i].ip_address.c_str(),
-                         showbridge.discoveredDACs[i].dac_information.channel);
-                if (ImGui::Selectable(device_label, showbridge.selectedDeviceIndex == i))
-                {
-                    showbridge.selectDAC(i);
-                    device_selected = true;
-                }
-                ImGui::PopID();
-            }
-            ImGui::EndChild();
-        } else {
-            ImGui::Text("No devices found. Click 'Discover DACs' to scan.");
-        }
+                ImGui::Text("Selected Show: %s", g_selected_show_info.showName);
+                ImGui::Text("UDP Port: %d", g_selected_show_info.udpPort);
+                ImGui::Text("Channel: %d", g_selected_show_info.cannerInfo.channel);
+                ImGui::Text("External Mode: %s", g_show_extern_mode ? "Enabled" : "Disabled");
 
-        ImGui::Text("Device Selected: %s", (showbridge.selectedDeviceIndex != -1) ? "Yes" : "No");
-        if (showbridge.selectedDeviceIndex != -1)
-        {
-            ImGui::Text("Selected IP: %s", showbridge.discoveredDACs[showbridge.selectedDeviceIndex].ip_address.c_str());
-            ImGui::Separator();
-            if (ImGui::Button("Send Sample ILDA Frame"))
-            {
-                frame_buffer sample_frame;
-                GenerateSampleILDAFrame(sample_frame);
-                if (showbridge.sendFrame(sample_frame))
+                if (ImGui::Button(g_show_extern_mode ? "Disable External Mode" : "Enable External Mode"))
                 {
-                    printf("Sample ILDA frame sent successfully!\n");
+                    if (showbridge.getSdk() && showbridge.getSdk()->SetShowExternMode(g_selected_show_index, !g_show_extern_mode))
+                    {
+                        g_show_extern_mode = !g_show_extern_mode;
+                    }
                 }
-                else
+
+                ImGui::Separator();
+                if (ImGui::Button("Send Sample ILDA Frame"))
                 {
-                    fprintf(stderr, "Failed to send sample ILDA frame.\n");
+                    frame_buffer sample_frame;
+                    GenerateSampleILDAFrame(sample_frame);
+                    if (showbridge.sendFrame(sample_frame))
+                    {
+                        printf("Sample ILDA frame sent successfully!\n");
+                    }
+                    else
+                    {
+                        fprintf(stderr, "Failed to send sample ILDA frame.\n");
+                    }
                 }
             }
         }
@@ -441,27 +442,17 @@ int main(int, char**)
 
         // ILDA Clip Deck Window
         ImGui::Begin("ILDA Clip Deck");
-        if (ImGui::BeginTable("clip_grid", clipDeck.getCols()))
+        if (ImGui::BeginTable("clip_grid", 8)) // 8 columns for clips
         {
-            for (int row = 0; row < clipDeck.getRows(); row++)
+            for (int row = 0; row < 4; row++) // 4 rows
             {
                 ImGui::TableNextRow();
-                for (int col = 0; col < clipDeck.getCols(); col++)
+                for (int col = 0; col < 8; col++)
                 {
                     ImGui::TableNextColumn();
-                    Clip* clip = clipDeck.getClip(row, col);
-                    if (clip) {
-                        if (ImGui::Button(clip->getName().c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 50)))
-                        {
-                            frame_buffer frame = clip->getFrame();
-                            showbridge.sendFrame(frame);
-                        }
-                    }
-                    else {
-                        char button_label[32];
-                        ImFormatString(button_label, IM_ARRAYSIZE(button_label), "Clip %d,%d", row, col);
-                        ImGui::Button(button_label, ImVec2(ImGui::GetContentRegionAvail().x, 50));
-                    }
+                    char button_label[32];
+                    ImFormatString(button_label, IM_ARRAYSIZE(button_label), "Clip %d,%d", row, col);
+                    ImGui::Button(button_label, ImVec2(ImGui::GetContentRegionAvail().x, 50));
                 }
             }
             ImGui::EndTable();
@@ -592,14 +583,12 @@ int main(int, char**)
 
         glfwSwapBuffers(window);
     }
-    std::cout << "Exiting main loop." << std::endl;
 #ifdef __EMSCRIPTEN__
     EMSCRIPTEN_MAINLOOP_END;
 #endif
 
     // Cleanup
-    showbridge.stopDiscovery(); // Stop the discovery thread
-    showbridge.shutdown(); // Added shutdown call
+    showbridge.stopScanning();
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();

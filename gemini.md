@@ -86,7 +86,6 @@ Our ShowBridge protocol follows this pattern:
 
 The labels 7 and 8 are extracted from the checksum’s last nibble, matching the device’s channel identifiers.
 
-For Research ILDA we have pdf documents in the sdk folder.
 
 gemini will not run any build commands
 
@@ -108,16 +107,11 @@ gemini will not run any build commands
 
 *   The application now continuously scans for Showbridge DACs on the selected network interface.
 *   The UI displays a list of discovered DACs and their channels in real-time.
-*   The user can select a DAC and channel from the list.(In the future we use these as some kind of Filter, where we drag the dac or channel onto layer/clips to apply them as an output filter)
+*   The user can select a DAC and channel from the list.
 *   The SDK is initialized on-demand when communication is required (e.g., sending frames, getting show info), preventing crashes on device selection.
 
 **Next Steps:**
 
-*	Turn the Network Scan function into an switchable function, like turn the function on or off via a switch in the UI.
-*	Also we scan each network-adapter for multiple ip adresses with an if statement and display the name of the network instead of listing the adresses.
 *   Implement the sending of ILDA frames to the selected DAC and channel.
 *   Develop the ILDA clip deck, layers, and effects system.
-*	Develop the preview screens for Main Output and for Selected Clips/Layer
-*	Develop default Layouts + User Saveable Layouts.
-*	
 *   Integrate MIDI, DMX/Artnet, and OSC control.
