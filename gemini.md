@@ -86,10 +86,27 @@ Our ShowBridge protocol follows this pattern:
 
 The labels 7 and 8 are extracted from the checksum’s last nibble, matching the device’s channel identifiers.
 
+The Documentation for how we work and understand ILDA Files is at sdk/ILDA_IDTF14_rev011.pdf
+It is important to scan the first 4 bytes to = ILDA if the .ild file does not have ILDA in the first 4 bytes we ignore it,
+next byte 7 is our format byte where we expect 0,1,2,4,5 as valid formats.
 
-gemini will not run any build commands
+## Key Principles
+*   **Readability:** Code should be easy to understand for all team members.
+*   **Maintainability:** Code should be easy to modify and extend.
+*   **Consistency:** Adhering to a consistent style across all projects improves collaboration and reduces errors.
 
----
+## Project-Specific Instructions
+*   **Logging:** Use the project's custom logging library (e.g., `Logger::logInfo()`, `Logger::logError()`) instead of `std::cout` for application-level logging.
+*   **Performance Considerations:** Pay attention to performance-critical sections of code, especially in the data processing pipeline. Profile and optimize as needed.
+
+## Persona and Tone
+*   Act as a helpful and knowledgeable C++ expert, providing clear explanations and efficient solutions.
+*   Prioritize code quality, maintainability, and adherence to modern C++ principles.
+*   When suggesting refactorings, explain the rationale behind the changes.
+
+** We Always work on one feature at a time and write a Detailed summary of every Feature we created once its working **
+** Before Deleting Code we check if other Features rely on that Code **
+
 
 ## Project Summary (as of 2025-08-19)
 
@@ -103,6 +120,25 @@ gemini will not run any build commands
 
 **DAC:** Showbridge
 
+**Folder Structure** 
+	|___TrueLazer
+		|___libs (holds libarys we include)
+		|	|___glfw
+		|	|___imgui
+		|	
+		|___sdk (Information about devices,software,documents)
+		|	|___dac(In this Folder we have a Example for the Etherdream DAC that we include in the future)
+		|	|___showbridge(Contains a .bin and a .hex file for the showbridge)
+		|	|_Arena1.png (A Example of a UI we want to Create from resolume)
+		|
+		|___src (Our Work Folder)
+			|___Debug (in that folder we compile our project)
+			|	|_TrueLazer.exe
+			|___ILDA-FILE-FORMAT-FILES (In Here we have our default ILD Files)
+			|_build_win64.bat(The Build script)
+			|_trueLazer.ico(our Icon Image)
+
+
 **Connectivity:**
 
 *   The application now continuously scans for Showbridge DACs on the selected network interface.
@@ -112,6 +148,48 @@ gemini will not run any build commands
 
 **Next Steps:**
 
-*   Implement the sending of ILDA frames to the selected DAC and channel.
-*   Develop the ILDA clip deck, layers, and effects system.
-*   Integrate MIDI, DMX/Artnet, and OSC control.
+*	The Select Show Option after clicking on a device we dont need since we create the show and dont get it from the device.
+*   Develop the ILDA clip deck and layers:
+*	The Clipdeck will be a layer and column system like in resolume. on the left side a fixed controll/settings window to the right side all collumns scrollable if window is to small.
+*	Ontop Of the Clip-deck we add a Composition Label at the left folowed by X B & Master Intensity Slider(Horizontal)matching the 1.5 layout from the bellow settings. in the same row we add the labels for the columns above each column.
+, Above the layer preview window we add a Laser On/Off Button in the same row.
+*	The Settings/Controll area for layers will have Clear Clips (X) Blackout (B) Solo (S) Blend-mode (dropdown) Layer-name and a Intensity Slider(Vertical)
+*	The layout for the Settings Area is 2.5 = 1.25 X(full hight)B&S each half Hight, .25 Intensity Slider, 1 Preview thumbnail active clip. layer name under the  this settings window we aplly to each individual layer.
+*	The Clip-Deck will not scale with the window size it will remain in fixed size to get more space for more columns if needed.
+*	We let the option to add more layer and also more column in the title-bar under the menu point layer & Column. With the option to delete a layer or column by right click its label field.
+*	Each Clip has a Thumbnail Picture that we can update by right click on it. Each inactive Clip is Dark-grey. Each Clip has a label field under the preview.
+*	The Preview Window "Selected Clip Preview" will be previewing what ever we have active selected like layer,clip or composition/world
+*	The World Preview will render all Active Outputs to all Channels 
+*	Integrate a file system to search and look for ild files on our system that we use via drag'n'drop to our clips.
+
+*   Develop the Generator system:
+	We want to drag generators to empty clips to create our own ild clips.
+	Therefore we need a Simple Set of Shape Generators to choose from as base layer that we later can modify with effects.
+*   Develop the effects system:
+	The Effects we want also use via drag'n'drop to our clips & layers. 
+	exmp. transform xyz, rotation xyz, wave xyz, color pallete(with multi color selection),blanking etc.
+*   Integrate MIDI, DMX/Artnet, and OSC control within "shortcuts" window.
+
+*	The title bar  will be a custom title-bar containing all the settings bellow:
+*	The TrueLazer Button at the top left Contains Information like About, version number, Github link etc.
+*	The Settings will be a Placeholder until we decide what settings we need to be changeable by a user.
+*	The Layer Button Contains (get active Selected layer) New,Insert Above,Insert Below,Rename,Clear Clips, trigger Style (Aplie to all clips in that layer). same for the right click menu for each layer.
+*	The Column Button Contains (get Active Selected Column) New,Insert befor,Insert After, Duplicate, Rename, Clear Clips, remove. Same for the Right Click menu on columns.
+*	The Clip button Contains (get Active Selected Clip) Trigger Style, Thumbnail, Cut, Copy, Paste, Rename, Clear. Same for the Right click menu on each clip.
+*	The Output Button will open a new window in the future where we adjust output settings for our projectors. Like Scan Speed, Size, Mirroring, safe-zones and warping.
+*	The Shortcuts button will Open a list of input options : DMX/Artnet, MIDI And OSC if we click on on of them it starts the recording/mapping mode 
+*	The View button will let us choose of predefined layouts and color theme and render mode (High or Low performance mode to switch between 2d and 3d Rendering preview)
+
+*   Implement the sending of ILDA frames to the selected DAC and channel via draging the channel to a clip or layer.by dragging the dac to a clip or layer we applie that output to booth channels.
+*	DAC/Channels will be drag'n'drop to apply onto clips as output filter in the end.
+Following is an example layout:
+TrueLazer | Settings | Layer | Column | Clip | Output | Shortcuts | View |																		 | _ | [] | X |
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+Comp|X|B|M-Int |   On/Off   |  Col 1  |  Col 2  |  Col 3  |  Col 4  |  Col 5  |  Col 6  |  Col 7  |  Col 8  |  Col 9  |  Col 10 |  Col 11 |  Col 12 |  Col 13 |
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+|	| B | S |  |			|		  |		    |		  |		    |		  |		    |		  |		    |		  |		    |		  |		    |		  |
+| X |---|---|  |			|	Pre	  |	  Pre   |	Pre   |	  Pre   |	Pre   |	  Pre   |	Pre   |	  Pre   |	Pre   |	  Pre   |	Pre   |	  Pre   |	Pre   |
+|	| Blend | I|  Preview   |		  |		    |		  |		    |		  |		    |		  |		    |		  |		    |		  |		    |		  |
+------------|  |			|----------------------------------------------------------------------------------------------------------------------------------
+| LayerName	|  |			| Clp Name|	Clp Name| Clp Name|	Clp Name| Clp Name|	Clp Name| Clp Name|	Clp Name| Clp Name|	Clp Name| Clp Name|	Clp Name| Clp Name|
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
