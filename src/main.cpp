@@ -134,6 +134,30 @@ void RenderILDAFrame(const frame_buffer& fb)
     glPopAttrib();
 }
 
+// Define Clip struct
+struct Clip {
+    // Placeholder for clip properties
+    std::string name;
+    // ImTextureID thumbnail; // Will be added later
+    // int trigger_style; // Will be added later
+    // ...
+
+    Clip() : name("New Clip") {}
+};
+
+// Define Layer struct
+struct Layer {
+    std::string name;
+    int blend_mode;
+    float intensity;
+    std::vector<Clip> clips; // Clips for this layer
+
+    Layer() : name("New Layer"), blend_mode(0), intensity(1.0f) {
+        // Initialize with default clips if needed
+        // For now, let's assume columns are added dynamically
+    }
+};
+
 // Main code
 int main(int, char**)
 {
@@ -175,7 +199,8 @@ int main(int, char**)
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 #endif
 
-    // Create window with graphics context
+    glfwWindowHint(GLFW_DECORATED, GLFW_FALSE); // Disable window decorations
+
     float main_scale = ImGui_ImplGlfw_GetContentScaleForMonitor(glfwGetPrimaryMonitor()); // Valid on GLFW 3.3+ only
     printf("Creating GLFW window...\n");
     GLFWwindow* window = glfwCreateWindow((int)(1280 * main_scale), (int)(800 * main_scale), "TrueLazer", nullptr, nullptr);
@@ -247,6 +272,12 @@ int main(int, char**)
     // Our state
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
+    // Global UI state variables
+    // static int num_layers = 5; // Replaced by layers.size()
+    // static int num_columns = 13; // Replaced by layers[0].clips.size() (assuming all layers have same number of columns)
+    std::vector<Layer> layers;
+    std::vector<std::string> column_names; // Store column names for ImGui::TableSetupColumn
+
     // DameiSDK variables
     Showbridge showbridge;
     bool device_selected = false;
@@ -257,6 +288,20 @@ int main(int, char**)
     frame_buffer g_ilda_frame = {0}; // Global ILDA frame for rendering
     std::vector<std::string> g_local_interfaces; // Store local interface IPs for diagnostics
     std::string g_selected_local_interface_ip; // Store the selected local interface IP
+    std::vector<DiscoveredDACInfo> discovered_dacs; // Declare discovered_dacs here
+
+    // Initialize layers with 3 default layers and 13 default clips each
+    for (int i = 0; i < 3; ++i) {
+        layers.emplace_back(); // Add a default layer
+        for (int j = 0; j < 13; ++j) {
+            layers.back().clips.emplace_back(); // Add a default clip to the new layer
+        }
+    }
+
+    // Initialize column names
+    for (int j = 0; j < 13; ++j) { // Assuming 13 columns initially
+        column_names.push_back("Col " + std::to_string(j + 1));
+    }
 
     // Main loop
 #ifdef __EMSCRIPTEN__
@@ -288,7 +333,7 @@ int main(int, char**)
         ImGuiViewport* viewport = ImGui::GetMainViewport();
 
         // TrueLazer Main Window (full-screen, invisible, contains dockspace)
-                ImGuiWindowFlags host_window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground;
+        ImGuiWindowFlags host_window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground;
         ImGui::SetNextWindowPos(viewport->Pos);
         ImGui::SetNextWindowSize(viewport->Size);
         ImGui::SetNextWindowViewport(viewport->ID);
@@ -301,6 +346,133 @@ int main(int, char**)
         // DockSpace
         ImGuiID dockspace_id = ImGui::GetID("TrueLazerDockSpace");
         ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+
+        // Custom Title Bar
+        if (ImGui::BeginMainMenuBar())
+        {
+            if (ImGui::BeginMenu("TrueLazer"))
+            {
+                ImGui::MenuItem("About");
+                ImGui::MenuItem("Version");
+                ImGui::MenuItem("Github");
+                ImGui::EndMenu();
+            }
+            if (ImGui::BeginMenu("Settings"))
+            {
+                ImGui::MenuItem("Placeholder");
+                ImGui::EndMenu();
+            }
+            if (ImGui::BeginMenu("Layer"))
+            {
+                if (ImGui::MenuItem("New")) { layers.emplace_back(); }
+                ImGui::MenuItem("Insert Above");
+                ImGui::MenuItem("Insert Below");
+                ImGui::MenuItem("Rename");
+                ImGui::MenuItem("Clear Clips");
+                ImGui::MenuItem("Trigger Style");
+                if (ImGui::MenuItem("Remove")) { if (layers.size() > 1) layers.pop_back(); }
+                ImGui::EndMenu();
+            }
+            if (ImGui::BeginMenu("Column"))
+            {
+                if (ImGui::MenuItem("New")) { 
+                    for (auto& layer : layers) { 
+                        layer.clips.emplace_back(); 
+                    }
+                    column_names.push_back("Col " + std::to_string(column_names.size() + 1));
+                }
+                ImGui::MenuItem("Insert Before");
+                ImGui::MenuItem("Insert After");
+                ImGui::MenuItem("Duplicate");
+                ImGui::MenuItem("Rename");
+                ImGui::MenuItem("Clear Clips");
+                if (ImGui::MenuItem("Remove")) { 
+                    if (!layers.empty() && layers[0].clips.size() > 1) { 
+                        for (auto& layer : layers) { 
+                            layer.clips.pop_back(); 
+                        }
+                        column_names.pop_back();
+                    }
+                }
+                ImGui::EndMenu();
+            }
+            if (ImGui::BeginMenu("Clip"))
+            {
+                ImGui::MenuItem("Trigger Style");
+                ImGui::MenuItem("Thumbnail");
+                ImGui::MenuItem("Cut");
+                ImGui::MenuItem("Copy");
+                ImGui::MenuItem("Paste");
+                ImGui::MenuItem("Rename");
+                ImGui::MenuItem("Clear");
+                ImGui::EndMenu();
+            }
+            if (ImGui::BeginMenu("Output"))
+            {
+                ImGui::MenuItem("Open Output Window");
+                ImGui::EndMenu();
+            }
+            if (ImGui::BeginMenu("Shortcuts"))
+            {
+                ImGui::MenuItem("DMX/Artnet");
+                ImGui::MenuItem("MIDI");
+                ImGui::MenuItem("OSC");
+                ImGui::EndMenu();
+            }
+            if (ImGui::BeginMenu("View"))
+            {
+                ImGui::MenuItem("Layouts");
+                ImGui::MenuItem("Color Theme");
+                ImGui::MenuItem("Render Mode");
+                ImGui::EndMenu();
+            }
+            ImGui::EndMainMenuBar();
+
+            // Custom Window Controls (Minimize, Maximize, Close)
+            // Position them at the top-right of the main window
+            float button_width = 40.0f;
+            float button_height = ImGui::GetFrameHeight();
+            float padding = ImGui::GetStyle().FramePadding.x;
+            float buttons_total_width = (button_width * 3) + (padding * 2); // 3 buttons + 2 paddings
+
+            // Position for custom window controls
+            ImGui::SetCursorPosX(ImGui::GetWindowWidth() - buttons_total_width);
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY()); // Keep current Y position
+
+            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
+
+            // Minimize Button
+            if (ImGui::Button("-", ImVec2(button_width, button_height))) {
+                glfwIconifyWindow(window);
+            }
+
+            // Maximize/Restore Button
+            ImGui::SameLine();
+            if (ImGui::Button("[]", ImVec2(button_width, button_height))) {
+                if (glfwGetWindowAttrib(window, GLFW_MAXIMIZED)) {
+                    glfwRestoreWindow(window);
+                } else {
+                    glfwMaximizeWindow(window);
+                }
+            }
+
+            // Close Button
+            ImGui::SameLine();
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.4f, 0.4f, 1.0f));
+            if (ImGui::Button("X", ImVec2(button_width, button_height))) {
+                glfwSetWindowShouldClose(window, GLFW_TRUE);
+            }
+            ImGui::PopStyleColor(3); // Pop Close button colors
+
+            ImGui::PopStyleColor(3); // Pop general button colors
+            ImGui::PopStyleVar(2); // Pop FrameRounding and FramePadding
+        }
 
         // SDK Control Window
         ImGui::Begin("SDK Control");
@@ -335,7 +507,7 @@ int main(int, char**)
 
         ImGui::Text("Scanning for devices: %s", showbridge.isScanning() ? "Yes" : "No");
 
-        auto discovered_dacs = showbridge.getDiscoveredDACs();
+        discovered_dacs = showbridge.getDiscoveredDACs();
         if (!discovered_dacs.empty())
         {
             ImGui::Text("Discovered Devices:");
@@ -382,16 +554,22 @@ int main(int, char**)
             ImGui::Separator();
             ImGui::Text("Available Shows: %d", g_show_list.count);
 
-            const char* combo_preview_value = (g_selected_show_index >= 0 && g_selected_show_index < g_show_list.count)
-                ? g_show_list.udpPort[g_selected_show_index] > 0 ? g_selected_show_info.showName : "Select a Show"
-                : "Select a Show";
+            const char* combo_preview_value = "Select a Show"; // Default value
+
+            if (g_selected_show_index >= 0 && g_selected_show_index < g_show_list.count)
+            {
+                if (g_show_list.udpPort[g_selected_show_index] > 0)
+                {
+                    combo_preview_value = g_selected_show_info.showName;
+                }
+            }
 
             if (ImGui::BeginCombo("##shows", combo_preview_value))
             {
                 for (int i = 0; i < g_show_list.count; i++)
                 {
                     show_info temp_info;
-                    if (showbridge.getSdk() && showbridge.getSdk()->GetShowInfo(i, temp_info))
+                    if (showbridge.getSdk() && showbridge.getSdk()->GetShowInfo(i, temp_info)) 
                     {
                         bool is_selected = (g_selected_show_index == i);
                         if (ImGui::Selectable(temp_info.showName, is_selected))
@@ -440,41 +618,133 @@ int main(int, char**)
         }
         ImGui::End(); // End SDK Control Window
 
-        // ILDA Clip Deck Window
-        ImGui::Begin("ILDA Clip Deck");
-        if (ImGui::BeginTable("clip_grid", 8)) // 8 columns for clips
+        // Main Content Area (excluding title bar)
+        ImGui::SetNextWindowPos(ImVec2(viewport->Pos.x, viewport->Pos.y + ImGui::GetFrameHeight())); // Position below the main menu bar
+        ImGui::SetNextWindowSize(ImVec2(viewport->Size.x, viewport->Size.y - ImGui::GetFrameHeight())); // Occupy remaining height
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+        ImGui::Begin("MainContent", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground);
+        ImGui::PopStyleVar(3);
+
+        // Create a dockspace for the main content area
+        ImGuiID main_dockspace_id = ImGui::GetID("MainContentDockSpace");
+        ImGui::DockSpace(main_dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+
+        // Master Controls (aligned with Layer Controls)
+        float layer_control_panel_width = 250.0f;
+        ImGui::Text("Comp");
+        ImGui::SameLine();
+        if (ImGui::Button("X")) { /* Clear Clips */ }
+        ImGui::SameLine();
+        if (ImGui::Button("B")) { /* Blackout */ }
+        ImGui::SameLine();
+        static float master_intensity = 1.0f;
+        ImGui::PushItemWidth(layer_control_panel_width - ImGui::GetCursorPosX() - ImGui::GetStyle().WindowPadding.x); // Adjust width
+        ImGui::SliderFloat("Master Intensity", &master_intensity, 0.0f, 1.0f);
+        ImGui::PopItemWidth();
+        ImGui::Separator();
+
+        // Layer Controls (fixed width)
+        ImGui::BeginChild("LayerControlsPanel", ImVec2(layer_control_panel_width, ImGui::GetContentRegionAvail().y), true); // Fixed width, take remaining height
+        ImGui::Text("Layer Settings/Controls");
+        ImGui::Separator();
+
+        // Loop to generate controls for each layer
+        for (int i = 0; i < layers.size(); ++i)
         {
-            for (int row = 0; row < 4; row++) // 4 rows
+            ImGui::PushID(i); // Unique ID for each layer's controls
+
+            ImGui::Text("Layer %d", i + 1);
+            ImGui::Columns(2, "layer_cols", false); // 2 columns for layout
+
+            // Column 1: X, B, S buttons
+            ImGui::SetColumnWidth(0, ImGui::GetWindowWidth() * 0.6f); // Adjust width as needed
+            if (ImGui::Button("X", ImVec2(-FLT_MIN, ImGui::GetTextLineHeightWithSpacing() * 2.5f))) { /* Clear Clips */ }
+            if (ImGui::Button("B", ImVec2(-FLT_MIN, ImGui::GetTextLineHeightWithSpacing() * 1.25f))) { /* Blackout */ }
+            if (ImGui::Button("S", ImVec2(-FLT_MIN, ImGui::GetTextLineHeightWithSpacing() * 1.25f))) { /* Solo */ }
+
+            ImGui::NextColumn();
+
+            // Column 2: Blend-mode, Intensity Slider, Preview Thumbnail
+            const char* blend_modes[] = { "Normal", "Add", "Subtract" };
+            // Use layer.blend_mode
+            ImGui::Combo("Blend", &layers[i].blend_mode, blend_modes, IM_ARRAYSIZE(blend_modes));
+
+            // Use layer.intensity
+            ImGui::VSliderFloat("##intensity", ImVec2(ImGui::GetColumnWidth() * 0.5f, ImGui::GetTextLineHeightWithSpacing() * 5.0f), &layers[i].intensity, 0.0f, 1.0f, "Int");
+            ImGui::SameLine();
+            ImGui::Button("Preview", ImVec2(ImGui::GetColumnWidth() * 0.5f, ImGui::GetTextLineHeightWithSpacing() * 5.0f)); // Placeholder for thumbnail
+
+            ImGui::Columns(1); // Reset columns
+
+            // Use layer.name
+            char layer_name_buf[64];
+            strncpy(layer_name_buf, layers[i].name.c_str(), sizeof(layer_name_buf) - 1);
+            layer_name_buf[sizeof(layer_name_buf) - 1] = '\0'; // Ensure null-termination
+            ImGui::InputText("##layer_name", layer_name_buf, IM_ARRAYSIZE(layer_name_buf));
+            layers[i].name = layer_name_buf;
+
+            ImGui::Separator();
+            ImGui::PopID();
+        }
+        ImGui::EndChild(); // End LayerControlsPanel
+
+        ImGui::SameLine(); // Place Clip Deck next to Layer Controls
+
+        // Clip Deck (scrollable)
+        ImGui::BeginChild("ClipDeckPanel", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y), false, ImGuiWindowFlags_AlwaysHorizontalScrollbar); // Take remaining width/height
+        
+        // Laser On/Off Button (aligned with Clip Deck)
+        static bool laser_on = false;
+        ImGui::SameLine(ImGui::GetWindowWidth() - 100); // Align to right
+        if (ImGui::Checkbox("Laser On/Off", &laser_on)) { /* Toggle Laser Output */ }
+        ImGui::Separator();
+
+        // Clip Columns (Scrollable)
+        float clip_column_width = 150.0f; // Example fixed width for each clip column
+        int num_columns = layers.empty() ? 0 : layers[0].clips.size(); // Get num_columns from the first layer
+
+        // Column Headers using ImGui::BeginTable
+        if (ImGui::BeginTable("column_headers", num_columns, ImGuiTableFlags_SizingFixedFit))
+        {
+            for (int col = 0; col < num_columns; ++col)
+            {
+                ImGui::TableSetupColumn(column_names[col].c_str(), ImGuiTableColumnFlags_WidthFixed, clip_column_width);
+            }
+            ImGui::TableNextRow();
+            for (int col = 0; col < num_columns; ++col)
+            {
+                ImGui::TableNextColumn();
+                ImGui::Text("Col %d", col + 1);
+            }
+            ImGui::EndTable();
+        }
+        ImGui::Separator();
+
+        // Example Clip Grid (will be dynamic layers/columns later)
+        if (ImGui::BeginTable("clip_grid", num_columns, ImGuiTableFlags_Borders | ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoHostExtendX))
+        {
+            for (int col = 0; col < num_columns; ++col)
+            {
+                ImGui::TableSetupColumn(std::to_string(col).c_str(), ImGuiTableColumnFlags_WidthFixed, clip_column_width);
+            }
+            for (int row = 0; row < layers.size(); row++) // Use layers.size() for rows
             {
                 ImGui::TableNextRow();
-                for (int col = 0; col < 8; col++)
+                for (int col = 0; col < num_columns; col++)
                 {
                     ImGui::TableNextColumn();
                     char button_label[32];
                     ImFormatString(button_label, IM_ARRAYSIZE(button_label), "Clip %d,%d", row, col);
-                    ImGui::Button(button_label, ImVec2(ImGui::GetContentRegionAvail().x, 50));
+                    ImGui::Button(button_label, ImVec2(clip_column_width - ImGui::GetStyle().CellPadding.x * 2, 80)); // Fixed height for clips
                 }
             }
             ImGui::EndTable();
         }
-        ImGui::End();
+        ImGui::EndChild(); // End ClipDeckPanel
 
-        // Layers and Columns Window
-        ImGui::Begin("Layers and Columns");
-        ImGui::Text("Layers:");
-        ImGui::Indent();
-        ImGui::Text("Layer 1: Active");
-        ImGui::Text("Layer 2: Inactive");
-        ImGui::Text("Layer 3: Inactive");
-        ImGui::Unindent();
-        ImGui::Separator();
-        ImGui::Text("Columns:");
-        ImGui::Indent();
-        ImGui::Text("Column A");
-        ImGui::Text("Column B");
-        ImGui::Text("Column C");
-        ImGui::Unindent();
-        ImGui::End();
+        ImGui::End(); // End MainContent
 
         // Media Browser Window
         ImGui::Begin("Media Browser");
