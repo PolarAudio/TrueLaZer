@@ -331,21 +331,48 @@ int main(int, char**)
         ImGui::NewFrame();
 
         ImGuiViewport* viewport = ImGui::GetMainViewport();
-
-        // TrueLazer Main Window (full-screen, invisible, contains dockspace)
-        ImGuiWindowFlags host_window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground;
-        ImGui::SetNextWindowPos(viewport->Pos);
-        ImGui::SetNextWindowSize(viewport->Size);
-        ImGui::SetNextWindowViewport(viewport->ID);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-        ImGui::Begin("TrueLazerMainWindow", nullptr, host_window_flags);
-        ImGui::PopStyleVar(3);
+		ImGui::SetNextWindowPos(viewport->Pos);
+		ImGui::SetNextWindowSize(viewport->Size);
+		ImGui::SetNextWindowViewport(viewport->ID);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+		window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+		ImGui::Begin("TrueLazer DockSpace", nullptr, window_flags);
+		ImGui::PopStyleVar(3);
 
         // DockSpace
         ImGuiID dockspace_id = ImGui::GetID("TrueLazerDockSpace");
         ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+
+		static bool first_time = true;
+		if (first_time)
+		{
+			first_time = false;
+			ImGui::DockBuilderRemoveNode(dockspace_id); // Clear out existing layout
+			ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace); // Add back the dockspace node
+			ImGui::DockBuilderSetNodeSize(dockspace_id, viewport->Size);
+
+			// Split the dockspace into a top and bottom section
+			ImGuiID dock_main_id = dockspace_id; // This variable will track the main docking space
+			ImGuiID dock_id_top = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.4f, nullptr, &dock_main_id);
+			ImGuiID dock_id_bottom = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.5f, nullptr, &dock_main_id);
+
+			// Dock the windows
+			ImGui::DockBuilderDockWindow("ClipDeck", dock_id_top);
+			ImGui::DockBuilderDockWindow("SDK Control", dock_id_bottom);
+			ImGui::DockBuilderDockWindow("Media Browser", dock_id_bottom);
+			ImGui::DockBuilderDockWindow("Extensive Effects Library", dock_id_bottom);
+			ImGui::DockBuilderDockWindow("Generative Content (Sources)", dock_id_bottom);
+			ImGui::DockBuilderDockWindow("Selected Clip Preview", dock_id_bottom);
+			ImGui::DockBuilderDockWindow("World/Global Preview", dock_id_bottom);
+			ImGui::DockBuilderDockWindow("Projection Mapping", dock_id_bottom);
+
+
+			ImGui::DockBuilderFinish(dockspace_id);
+		}
 
         // Custom Title Bar
         if (ImGui::BeginMainMenuBar())
@@ -426,9 +453,7 @@ int main(int, char**)
                 ImGui::MenuItem("Render Mode");
                 ImGui::EndMenu();
             }
-            ImGui::EndMainMenuBar();
-
-            // Custom Window Controls (Minimize, Maximize, Close)
+			// Custom Window Controls (Minimize, Maximize, Close)
             // Position them at the top-right of the main window
             float button_width = 40.0f;
             float button_height = ImGui::GetFrameHeight();
@@ -436,16 +461,16 @@ int main(int, char**)
             float buttons_total_width = (button_width * 3) + (padding * 2); // 3 buttons + 2 paddings
 
             // Position for custom window controls
-            ImGui::SetCursorPosX(ImGui::GetWindowWidth() - buttons_total_width);
+            ImGui::SetCursorPosX(ImGui::GetWindowWidth() - (buttons_total_width + (padding*2)));
             ImGui::SetCursorPosY(ImGui::GetCursorPosY()); // Keep current Y position
 
-            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
+            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.5f);
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
             ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
-
-            // Minimize Button
+			
+			// Minimize Button
             if (ImGui::Button("-", ImVec2(button_width, button_height))) {
                 glfwIconifyWindow(window);
             }
@@ -465,6 +490,7 @@ int main(int, char**)
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
             ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.4f, 0.4f, 1.0f));
+			
             if (ImGui::Button("X", ImVec2(button_width, button_height))) {
                 glfwSetWindowShouldClose(window, GLFW_TRUE);
             }
@@ -472,7 +498,92 @@ int main(int, char**)
 
             ImGui::PopStyleColor(3); // Pop general button colors
             ImGui::PopStyleVar(2); // Pop FrameRounding and FramePadding
+			
+            ImGui::EndMainMenuBar();
         }
+
+        // Combined Layer Controls and Clip Deck Window
+        ImGui::Begin("ClipDeck");
+        // Main Content
+        if (ImGui::BeginTable("ClipDeckTable", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable | ImGuiTableFlags_NoHostExtendX | ImGuiTableFlags_ScrollX))
+        {
+            ImGui::TableSetupColumn("Layer Controls", ImGuiTableColumnFlags_WidthFixed, 250.0f);
+            ImGui::TableSetupColumn("Clips", ImGuiTableColumnFlags_WidthStretch);
+
+            // Header Row for Clips
+            ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
+            ImGui::TableNextColumn();			// Skip layer controls column for header
+			// Header Row
+			ImGui::BeginChild("Header", ImVec2(0, ImGui::GetFrameHeightWithSpacing() * 1.2), true);
+			ImGui::Columns(2);
+			ImGui::SetColumnWidth(0, 0);
+			ImGui::Text("Comp");
+			ImGui::SameLine();
+			ImGui::Button("X");
+			ImGui::SameLine();
+			ImGui::Button("B");
+			ImGui::SameLine();
+			static float master_intensity = 1.0f;
+			ImGui::SliderFloat("##MasterIntensity", &master_intensity, 0.0f, 1.0f);
+			ImGui::NextColumn();
+			static bool laser_on = false;
+			ImGui::Checkbox("Laser On/Off", &laser_on);
+			ImGui::Columns(1);
+			ImGui::EndChild();
+			
+            ImGui::TableNextColumn();
+            for (int j = 0; j < column_names.size(); ++j)
+            {
+                ImGui::Button(column_names[j].c_str());
+                ImGui::SameLine();
+            }
+
+            for (int i = 0; i < layers.size(); ++i)
+            {
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn();
+
+                // -- Layer Controls Cell --
+                ImGui::PushID(i);
+                ImGui::Text("Layer %d", i + 1);
+
+				ImGui::Columns(2, "layer_cols", false);
+				// Column 1: X, B, S buttons
+				ImGui::SetColumnWidth(0, ImGui::GetWindowWidth() * 0.2f);
+				if (ImGui::Button("X", ImVec2(-FLT_MIN, ImGui::GetTextLineHeightWithSpacing() * 2.5f))) { /* Clear Clips */ }
+				if (ImGui::Button("B", ImVec2(-FLT_MIN, ImGui::GetTextLineHeightWithSpacing() * 1.25f))) { /* Blackout */ }
+				if (ImGui::Button("S", ImVec2(-FLT_MIN, ImGui::GetTextLineHeightWithSpacing() * 1.25f))) { /* Solo */ }
+				ImGui::NextColumn();
+				// Column 2: Blend-mode, Intensity Slider, Preview Thumbnail
+				const char* blend_modes[] = { "Normal", "Add", "Subtract" };
+				ImGui::Combo("Blend", &layers[i].blend_mode, blend_modes, IM_ARRAYSIZE(blend_modes));
+				ImGui::VSliderFloat("##intensity", ImVec2(ImGui::GetColumnWidth() * 0.5f, ImGui::GetTextLineHeightWithSpacing() * 5.0f), &layers[i].intensity, 0.0f, 1.0f, "Int");
+				ImGui::SameLine();
+				ImGui::Button("Preview", ImVec2(ImGui::GetColumnWidth() * 0.5f, ImGui::GetTextLineHeightWithSpacing() * 5.0f));
+				ImGui::Columns(1);
+				char layer_name_buf[64];
+				strncpy(layer_name_buf, layers[i].name.c_str(), sizeof(layer_name_buf) - 1);
+				layer_name_buf[sizeof(layer_name_buf) - 1] = '\0';
+				ImGui::InputText("##layer_name", layer_name_buf, IM_ARRAYSIZE(layer_name_buf));
+				layers[i].name = layer_name_buf;
+
+                ImGui::PopID();
+
+                ImGui::TableNextColumn();
+
+                // -- Clips Cell --
+                for (int j = 0; j < layers[i].clips.size(); ++j)
+                {
+                    ImGui::Button(layers[i].clips[j].name.c_str(), ImVec2(100, 80));
+                    ImGui::SameLine();
+                }
+            }
+
+            ImGui::EndTable();
+        }
+
+
+        ImGui::End(); // End Combined Window
 
         // SDK Control Window
         ImGui::Begin("SDK Control");
@@ -618,135 +729,7 @@ int main(int, char**)
         }
         ImGui::End(); // End SDK Control Window
 
-        // Main Content Area (excluding title bar)
-        ImGui::SetNextWindowPos(ImVec2(viewport->Pos.x, viewport->Pos.y + ImGui::GetFrameHeight())); // Position below the main menu bar
-        ImGui::SetNextWindowSize(ImVec2(viewport->Size.x, viewport->Size.y - ImGui::GetFrameHeight())); // Occupy remaining height
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-        ImGui::Begin("MainContent", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground);
-        ImGui::PopStyleVar(3);
-
-        // Create a dockspace for the main content area
-        ImGuiID main_dockspace_id = ImGui::GetID("MainContentDockSpace");
-        ImGui::DockSpace(main_dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
-
-        // Master Controls (aligned with Layer Controls)
-        float layer_control_panel_width = 250.0f;
-        ImGui::Text("Comp");
-        ImGui::SameLine();
-        if (ImGui::Button("X")) { /* Clear Clips */ }
-        ImGui::SameLine();
-        if (ImGui::Button("B")) { /* Blackout */ }
-        ImGui::SameLine();
-        static float master_intensity = 1.0f;
-        ImGui::PushItemWidth(layer_control_panel_width - ImGui::GetCursorPosX() - ImGui::GetStyle().WindowPadding.x); // Adjust width
-        ImGui::SliderFloat("Master Intensity", &master_intensity, 0.0f, 1.0f);
-        ImGui::PopItemWidth();
-        ImGui::Separator();
-
-        // Layer Controls (fixed width)
-        ImGui::BeginChild("LayerControlsPanel", ImVec2(layer_control_panel_width, ImGui::GetContentRegionAvail().y), true); // Fixed width, take remaining height
-        ImGui::Text("Layer Settings/Controls");
-        ImGui::Separator();
-
-        // Loop to generate controls for each layer
-        for (int i = 0; i < layers.size(); ++i)
-        {
-            ImGui::PushID(i); // Unique ID for each layer's controls
-
-            ImGui::Text("Layer %d", i + 1);
-            ImGui::Columns(2, "layer_cols", false); // 2 columns for layout
-
-            // Column 1: X, B, S buttons
-            ImGui::SetColumnWidth(0, ImGui::GetWindowWidth() * 0.6f); // Adjust width as needed
-            if (ImGui::Button("X", ImVec2(-FLT_MIN, ImGui::GetTextLineHeightWithSpacing() * 2.5f))) { /* Clear Clips */ }
-            if (ImGui::Button("B", ImVec2(-FLT_MIN, ImGui::GetTextLineHeightWithSpacing() * 1.25f))) { /* Blackout */ }
-            if (ImGui::Button("S", ImVec2(-FLT_MIN, ImGui::GetTextLineHeightWithSpacing() * 1.25f))) { /* Solo */ }
-
-            ImGui::NextColumn();
-
-            // Column 2: Blend-mode, Intensity Slider, Preview Thumbnail
-            const char* blend_modes[] = { "Normal", "Add", "Subtract" };
-            // Use layer.blend_mode
-            ImGui::Combo("Blend", &layers[i].blend_mode, blend_modes, IM_ARRAYSIZE(blend_modes));
-
-            // Use layer.intensity
-            ImGui::VSliderFloat("##intensity", ImVec2(ImGui::GetColumnWidth() * 0.5f, ImGui::GetTextLineHeightWithSpacing() * 5.0f), &layers[i].intensity, 0.0f, 1.0f, "Int");
-            ImGui::SameLine();
-            ImGui::Button("Preview", ImVec2(ImGui::GetColumnWidth() * 0.5f, ImGui::GetTextLineHeightWithSpacing() * 5.0f)); // Placeholder for thumbnail
-
-            ImGui::Columns(1); // Reset columns
-
-            // Use layer.name
-            char layer_name_buf[64];
-            strncpy(layer_name_buf, layers[i].name.c_str(), sizeof(layer_name_buf) - 1);
-            layer_name_buf[sizeof(layer_name_buf) - 1] = '\0'; // Ensure null-termination
-            ImGui::InputText("##layer_name", layer_name_buf, IM_ARRAYSIZE(layer_name_buf));
-            layers[i].name = layer_name_buf;
-
-            ImGui::Separator();
-            ImGui::PopID();
-        }
-        ImGui::EndChild(); // End LayerControlsPanel
-
-        ImGui::SameLine(); // Place Clip Deck next to Layer Controls
-
-        // Clip Deck (scrollable)
-        ImGui::BeginChild("ClipDeckPanel", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y), false, ImGuiWindowFlags_AlwaysHorizontalScrollbar); // Take remaining width/height
-        
-        // Laser On/Off Button (aligned with Clip Deck)
-        static bool laser_on = false;
-        ImGui::SameLine(ImGui::GetWindowWidth() - 100); // Align to right
-        if (ImGui::Checkbox("Laser On/Off", &laser_on)) { /* Toggle Laser Output */ }
-        ImGui::Separator();
-
-        // Clip Columns (Scrollable)
-        float clip_column_width = 150.0f; // Example fixed width for each clip column
-        int num_columns = layers.empty() ? 0 : layers[0].clips.size(); // Get num_columns from the first layer
-
-        // Column Headers using ImGui::BeginTable
-        if (ImGui::BeginTable("column_headers", num_columns, ImGuiTableFlags_SizingFixedFit))
-        {
-            for (int col = 0; col < num_columns; ++col)
-            {
-                ImGui::TableSetupColumn(column_names[col].c_str(), ImGuiTableColumnFlags_WidthFixed, clip_column_width);
-            }
-            ImGui::TableNextRow();
-            for (int col = 0; col < num_columns; ++col)
-            {
-                ImGui::TableNextColumn();
-                ImGui::Text("Col %d", col + 1);
-            }
-            ImGui::EndTable();
-        }
-        ImGui::Separator();
-
-        // Example Clip Grid (will be dynamic layers/columns later)
-        if (ImGui::BeginTable("clip_grid", num_columns, ImGuiTableFlags_Borders | ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoHostExtendX))
-        {
-            for (int col = 0; col < num_columns; ++col)
-            {
-                ImGui::TableSetupColumn(std::to_string(col).c_str(), ImGuiTableColumnFlags_WidthFixed, clip_column_width);
-            }
-            for (int row = 0; row < layers.size(); row++) // Use layers.size() for rows
-            {
-                ImGui::TableNextRow();
-                for (int col = 0; col < num_columns; col++)
-                {
-                    ImGui::TableNextColumn();
-                    char button_label[32];
-                    ImFormatString(button_label, IM_ARRAYSIZE(button_label), "Clip %d,%d", row, col);
-                    ImGui::Button(button_label, ImVec2(clip_column_width - ImGui::GetStyle().CellPadding.x * 2, 80)); // Fixed height for clips
-                }
-            }
-            ImGui::EndTable();
-        }
-        ImGui::EndChild(); // End ClipDeckPanel
-
-        ImGui::End(); // End MainContent
-
-        // Media Browser Window
+		// Media Browser Window
         ImGui::Begin("Media Browser");
         ImGui::Text("Files:");
         ImGui::Separator();
@@ -828,8 +811,6 @@ int main(int, char**)
         ImGui::End();
 
         ImGui::End();
-
-        // Rendering
 
         // Rendering
         ImGui::Render();
